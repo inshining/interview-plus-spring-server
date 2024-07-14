@@ -9,10 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class UserLoginResponseDTO {
-    private long userId;
-    private String name;
-    private String email;
-    private String pictureUrl;
+public class UserAuthResponseDTO {
+    private UserDTO user;
     private JwtTokenDTO token;
 }

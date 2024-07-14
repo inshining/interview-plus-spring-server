@@ -1,7 +1,5 @@
 package com.ddoddii.resume.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,10 +9,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class UserLoginRequestDTO {
-    @NotBlank
-    @Email
+public class UserGoogleLoginRequestDTO {
+    private String idToken;
+    private String name;
     private String email;
-    @NotBlank
-    private String password;
 }
