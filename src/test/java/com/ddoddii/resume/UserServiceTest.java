@@ -1,13 +1,16 @@
 package com.ddoddii.resume;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.ddoddii.resume.dto.UserSignUpRequestDTO;
+import com.ddoddii.resume.dto.UserAuthResponseDTO;
+import com.ddoddii.resume.dto.UserEmailSignUpRequestDTO;
 import com.ddoddii.resume.error.exception.DuplicateIdException;
 import com.ddoddii.resume.error.exception.NotExistIdException;
 import com.ddoddii.resume.model.User;
@@ -33,7 +36,7 @@ class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
-    UserSignUpRequestDTO user;
+    UserEmailSignUpRequestDTO user;
 
     @BeforeEach
     public void setUp() {
@@ -42,7 +45,7 @@ class UserServiceTest {
 
     @BeforeEach
     public void makeUser() {
-        user = UserSignUpRequestDTO.builder()
+        user = UserEmailSignUpRequestDTO.builder()
                 .password(PasswordEncrypter.encrypt("test123"))
                 .email("test@email.com")
                 .name("testUser")
@@ -52,12 +55,29 @@ class UserServiceTest {
     @Test
     @DisplayName("회원가입에 성공합니다")
     void 유저_회원가입_성공() throws Exception {
+        //Given
+        User encryptedUser = new User();
+        encryptedUser.setEmail(user.getEmail());
+        encryptedUser.setName(user.getName());
+
+        User savedUser = new User();
+        savedUser.setId(1L);
+        savedUser.setEmail(user.getEmail());
+        savedUser.setName(user.getName());
+
         //When
         when(userRepository.existsByEmail(any(String.class))).thenReturn(false);
+        when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
-        userService.signUp(user);
+        // Act
+        UserAuthResponseDTO response = userService.emailSignUpAndLogin(user);
+
         //Then
         verify(userRepository).save(any(User.class));
+        assertNotNull(response);
+        assertEquals(1L, response.getUser().getUserId());
+        assertEquals("test@email.com", response.getUser().getEmail());
+        assertEquals("testUser", response.getUser().getName());
     }
 
     @Test
@@ -66,7 +86,7 @@ class UserServiceTest {
         //When
         when(userRepository.existsByEmail(user.getEmail())).thenReturn(true);
         //Then
-        assertThatThrownBy(() -> userService.signUp(user))
+        assertThatThrownBy(() -> userService.emailSignUp(user))
                 .isInstanceOf(DuplicateIdException.class);
         verify(userRepository, never()).save(any(User.class));
     }

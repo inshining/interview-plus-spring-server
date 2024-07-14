@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserSignUpResponseDTO {
-    private String name;
-    private String email;
-    private String pictureUrl;
+public class GoogleLoginResponseDTO {
+    private UserDTO userDTO;
+    private JwtTokenDTO tokenDTO;
 }

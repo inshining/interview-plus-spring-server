@@ -2,10 +2,10 @@ package com.ddoddii.resume.controller;
 
 import com.ddoddii.resume.dto.JwtTokenDTO;
 import com.ddoddii.resume.dto.RefreshTokenRequestDTO;
-import com.ddoddii.resume.dto.UserLoginRequestDTO;
-import com.ddoddii.resume.dto.UserLoginResponseDTO;
-import com.ddoddii.resume.dto.UserSignUpRequestDTO;
-import com.ddoddii.resume.dto.UserSignUpResponseDTO;
+import com.ddoddii.resume.dto.UserAuthResponseDTO;
+import com.ddoddii.resume.dto.UserEmailLoginRequestDTO;
+import com.ddoddii.resume.dto.UserEmailSignUpRequestDTO;
+import com.ddoddii.resume.dto.UserGoogleLoginRequestDTO;
 import com.ddoddii.resume.model.User;
 import com.ddoddii.resume.service.UserService;
 import jakarta.validation.Valid;
@@ -25,14 +25,26 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/")
-    public ResponseEntity<UserSignUpResponseDTO> signUp(@RequestBody @Valid UserSignUpRequestDTO user) {
-        UserSignUpResponseDTO response = userService.signUp(user);
+    public ResponseEntity<UserAuthResponseDTO> emailSignUp(@RequestBody @Valid UserEmailSignUpRequestDTO user) {
+        UserAuthResponseDTO response = userService.emailSignUpAndLogin(user);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<UserLoginResponseDTO> login(@RequestBody @Valid UserLoginRequestDTO request) {
-        UserLoginResponseDTO response = userService.login(request);
+    @PostMapping("/email-login")
+    public ResponseEntity<UserAuthResponseDTO> emailLogin(@RequestBody @Valid UserEmailLoginRequestDTO request) {
+        UserAuthResponseDTO response = userService.emailLogin(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/google-login")
+    public ResponseEntity<UserAuthResponseDTO> googleLogin(@RequestBody @Valid UserGoogleLoginRequestDTO request) {
+        UserAuthResponseDTO response = userService.googleLogin(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/duplicate-email")
+    public ResponseEntity<Boolean> checkDuplicateEmail(String email) {
+        Boolean response = userService.checkDuplicateEmail(email);
         return ResponseEntity.ok(response);
     }
 

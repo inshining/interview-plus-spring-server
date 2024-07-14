@@ -44,8 +44,8 @@ public class User extends BaseEntity {
     @Column(name = "email", unique = true)
     private String email;
 
-    @Column(name = "picture_url")
-    private String pictureUrl;
+    @Column(name = "remain_interview")
+    private Integer remainInterview;
 
     @Enumerated(EnumType.STRING)
     @NotNull

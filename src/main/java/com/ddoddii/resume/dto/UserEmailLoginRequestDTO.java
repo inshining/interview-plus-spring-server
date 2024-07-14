@@ -11,7 +11,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class UserLoginRequestDTO {
+public class UserEmailLoginRequestDTO {
     @NotBlank
     @Email
     private String email;

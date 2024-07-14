@@ -10,11 +10,8 @@ import lombok.ToString;
 @Getter
 @Setter
 @Builder
-@ToString
-public class UserLoginResponseDTO {
-    private long userId;
+public class UserGoogleLoginRequestDTO {
+    private String idToken;
     private String name;
     private String email;
-    private String pictureUrl;
-    private JwtTokenDTO token;
 }
