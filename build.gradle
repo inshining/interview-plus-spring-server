@@ -45,7 +45,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     //openai api
     implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter:0.8.0-SNAPSHOT'
-
+    //gcloud sql
+    implementation 'mysql:mysql-connector-java'
+    implementation 'com.google.cloud.sql:mysql-socket-factory:1.4.3'
 }
 
 tasks.named('test') {
