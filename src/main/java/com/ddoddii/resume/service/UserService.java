@@ -1,5 +1,6 @@
 package com.ddoddii.resume.service;
 
+import com.ddoddii.resume.dto.DuplicateEmailRequestDTO;
 import com.ddoddii.resume.dto.JwtTokenDTO;
 import com.ddoddii.resume.dto.UserAuthResponseDTO;
 import com.ddoddii.resume.dto.UserDTO;
@@ -171,8 +172,8 @@ public class UserService {
                 .build();
     }
 
-    public boolean checkDuplicateEmail(String email) {
-        return userRepository.existsByEmail(email);
+    public boolean checkDuplicateEmail(DuplicateEmailRequestDTO requestDTO) {
+        return userRepository.existsByEmail(requestDTO.getEmail());
     }
 
 

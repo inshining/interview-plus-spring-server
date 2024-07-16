@@ -1,5 +1,6 @@
 package com.ddoddii.resume.controller;
 
+import com.ddoddii.resume.dto.DuplicateEmailRequestDTO;
 import com.ddoddii.resume.dto.JwtTokenDTO;
 import com.ddoddii.resume.dto.RefreshTokenRequestDTO;
 import com.ddoddii.resume.dto.UserAuthResponseDTO;
@@ -43,8 +44,8 @@ public class UserController {
     }
 
     @PostMapping("/duplicate-email")
-    public ResponseEntity<Boolean> checkDuplicateEmail(String email) {
-        Boolean response = userService.checkDuplicateEmail(email);
+    public ResponseEntity<Boolean> checkDuplicateEmail(@RequestBody DuplicateEmailRequestDTO requestDTO) {
+        Boolean response = userService.checkDuplicateEmail(requestDTO);
         return ResponseEntity.ok(response);
     }
 
