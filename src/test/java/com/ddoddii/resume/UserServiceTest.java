@@ -1,13 +1,16 @@
 package com.ddoddii.resume;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.ddoddii.resume.dto.UserSignUpRequestDTO;
+import com.ddoddii.resume.dto.UserAuthResponseDTO;
+import com.ddoddii.resume.dto.UserEmailSignUpRequestDTO;
 import com.ddoddii.resume.error.exception.DuplicateIdException;
 import com.ddoddii.resume.error.exception.NotExistIdException;
 import com.ddoddii.resume.model.User;
@@ -33,7 +36,7 @@ class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
-    UserSignUpRequestDTO user;
+    UserEmailSignUpRequestDTO user;
 
     @BeforeEach
     public void setUp() {
@@ -42,8 +45,7 @@ class UserServiceTest {
 
     @BeforeEach
     public void makeUser() {
-        user = UserSignUpRequestDTO.builder()
-                .userId("user")
+        user = UserEmailSignUpRequestDTO.builder()
                 .password(PasswordEncrypter.encrypt("test123"))
                 .email("test@email.com")
                 .name("testUser")
@@ -53,21 +55,38 @@ class UserServiceTest {
     @Test
     @DisplayName("회원가입에 성공합니다")
     void 유저_회원가입_성공() throws Exception {
-        //When
-        when(userRepository.existsByUserId(any(String.class))).thenReturn(false);
+        //Given
+        User encryptedUser = new User();
+        encryptedUser.setEmail(user.getEmail());
+        encryptedUser.setName(user.getName());
 
-        userService.signUp(user);
+        User savedUser = new User();
+        savedUser.setId(1L);
+        savedUser.setEmail(user.getEmail());
+        savedUser.setName(user.getName());
+
+        //When
+        when(userRepository.existsByEmail(any(String.class))).thenReturn(false);
+        when(userRepository.save(any(User.class))).thenReturn(savedUser);
+
+        // Act
+        UserAuthResponseDTO response = userService.emailSignUpAndLogin(user);
+
         //Then
         verify(userRepository).save(any(User.class));
+        assertNotNull(response);
+        assertEquals(1L, response.getUser().getUserId());
+        assertEquals("test@email.com", response.getUser().getEmail());
+        assertEquals("testUser", response.getUser().getName());
     }
 
     @Test
     @DisplayName("회원가입에 실패합니다 : 중복된 아이디")
     void 유저_회원가입_실패_중복_아이디() {
         //When
-        when(userRepository.existsByUserId(user.getUserId())).thenReturn(true);
+        when(userRepository.existsByEmail(user.getEmail())).thenReturn(true);
         //Then
-        assertThatThrownBy(() -> userService.signUp(user))
+        assertThatThrownBy(() -> userService.emailSignUp(user))
                 .isInstanceOf(DuplicateIdException.class);
         verify(userRepository, never()).save(any(User.class));
     }
@@ -77,13 +96,12 @@ class UserServiceTest {
     void 유저_삭제_성공() {
         //Given
         User mockUser = new User();
-        mockUser.setUserId(user.getUserId());
         mockUser.setEmail(user.getEmail());
         mockUser.setName(user.getName());
         mockUser.setPassword(user.getPassword());
         //When
-        when(userRepository.findByUserId(user.getUserId())).thenReturn(Optional.of(mockUser));
-        userService.deleteUser(user.getUserId());
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(mockUser));
+        userService.deleteUser(user.getEmail());
         //Then
         verify(userRepository).delete(mockUser);
     }
@@ -92,11 +110,11 @@ class UserServiceTest {
     @DisplayName("유저 삭제에 실패합니다 : 삭제할 아이디 존재하지 않음")
     void 유저_삭제_실패() {
         //Given
-        final String userId = user.getUserId();
+        final String email = user.getEmail();
         //When
-        when(userRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
         //Then
-        assertThatThrownBy(() -> userService.deleteUser(userId))
+        assertThatThrownBy(() -> userService.deleteUser(email))
                 .isInstanceOf(NotExistIdException.class);
         verify(userRepository, never()).delete(any(User.class));
     }
@@ -106,14 +124,13 @@ class UserServiceTest {
     void 유저_비밀번호_변경_성공() {
         //Given
         User mockUser = new User();
-        mockUser.setUserId(user.getUserId());
         mockUser.setEmail(user.getEmail());
         mockUser.setName(user.getName());
         mockUser.setPassword(user.getPassword());
         final String changedPassword = "change123";
         //When
-        when(userRepository.findByUserId(user.getUserId())).thenReturn(Optional.of(mockUser));
-        userService.changeUserPassword(mockUser.getUserId(), changedPassword);
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(mockUser));
+        userService.changeUserPassword(mockUser.getEmail(), changedPassword);
         //Then
         assertTrue(PasswordEncrypter.isMatch(changedPassword, mockUser.getPassword()));
     }

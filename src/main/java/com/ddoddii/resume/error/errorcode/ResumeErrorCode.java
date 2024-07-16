@@ -6,13 +6,10 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum UserErrorCode implements ErrorCode {
-    DUPLICATE_USER(HttpStatus.CONFLICT, "User with same id already exists"),
-    NOT_EXIST_USER(HttpStatus.NOT_FOUND, "User not found"),
-    BAD_CREDENTIALS(HttpStatus.UNAUTHORIZED, "Bad Credentials");
-
+public enum ResumeErrorCode implements ErrorCode {
+    NOT_EXIST_RESUME(HttpStatus.NOT_FOUND, "Resume not found"),
+    NOT_RESUME_OWNER(HttpStatus.UNAUTHORIZED, "Not Resume Owner");
 
     private final HttpStatus httpStatus;
     private final String message;
-
 }

@@ -6,11 +6,8 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum UserErrorCode implements ErrorCode {
-    DUPLICATE_USER(HttpStatus.CONFLICT, "User with same id already exists"),
-    NOT_EXIST_USER(HttpStatus.NOT_FOUND, "User not found"),
-    BAD_CREDENTIALS(HttpStatus.UNAUTHORIZED, "Bad Credentials");
-
+public enum OpenAiErrorCode implements ErrorCode {
+    JSON_PARSE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Json Parse Error");
 
     private final HttpStatus httpStatus;
     private final String message;
