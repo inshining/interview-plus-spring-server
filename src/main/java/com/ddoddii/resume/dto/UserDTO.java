@@ -10,6 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
+<<<<<<<< HEAD:src/main/java/com/ddoddii/resume/dto/UserDTO.java
 public class UserDTO {
     private long userId;
     private String name;
@@ -17,4 +18,10 @@ public class UserDTO {
     private LoginType loginType;
     private String defaultResume;
     private Integer remainInterview;
+========
+public class UserGoogleLoginRequestDTO {
+    private String idToken;
+    private String name;
+    private String email;
+>>>>>>>> e5e14e9 (feat : 로그인 수):src/main/java/com/ddoddii/resume/dto/UserGoogleLoginRequestDTO.java
 }
