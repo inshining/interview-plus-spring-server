@@ -11,8 +11,8 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class UserSignUpResponseDTO {
+public class UserGoogleLoginRequestDTO {
+    private String idToken;
     private String name;
     private String email;
-    private String pictureUrl;
 }
