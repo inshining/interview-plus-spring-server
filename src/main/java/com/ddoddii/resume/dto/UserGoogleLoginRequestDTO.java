@@ -3,14 +3,16 @@ package com.ddoddii.resume.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-@AllArgsConstructor
 @Getter
-@Setter
 @Builder
-public class UserGoogleLoginRequestDTO {
-    private String idToken;
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
+public class UserSignUpResponseDTO {
     private String name;
     private String email;
+    private String pictureUrl;
 }
