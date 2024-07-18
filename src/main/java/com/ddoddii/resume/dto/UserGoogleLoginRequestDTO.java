@@ -12,5 +12,6 @@ import lombok.Setter;
 public class UserGoogleLoginRequestDTO {
     private String idToken;
     private String name;
+    private String email;
 }
 
