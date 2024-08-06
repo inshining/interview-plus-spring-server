@@ -1,7 +1,5 @@
-package com.ddoddii.resume.dto;
+package com.ddoddii.resume.dto.evaluation;
 
-
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,7 +11,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class PersonalQuestionDTO {
-    private String question;
-    private List<String> criteria;
+public class EvalDTO {
+    private int score;
+    private String evaluation;
 }
