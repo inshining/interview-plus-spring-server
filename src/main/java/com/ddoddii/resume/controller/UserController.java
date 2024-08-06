@@ -1,13 +1,13 @@
 package com.ddoddii.resume.controller;
 
-import com.ddoddii.resume.dto.DuplicateEmailRequestDTO;
-import com.ddoddii.resume.dto.JwtTokenDTO;
-import com.ddoddii.resume.dto.RefreshTokenRequestDTO;
-import com.ddoddii.resume.dto.UserAuthResponseDTO;
-import com.ddoddii.resume.dto.UserEmailLoginRequestDTO;
-import com.ddoddii.resume.dto.UserEmailSignUpRequestDTO;
-import com.ddoddii.resume.dto.UserGoogleLoginRequestDTO;
-import com.ddoddii.resume.model.User;
+import com.ddoddii.resume.dto.user.DuplicateEmailRequestDTO;
+import com.ddoddii.resume.dto.user.JwtTokenDTO;
+import com.ddoddii.resume.dto.user.RefreshTokenRequestDTO;
+import com.ddoddii.resume.dto.user.UserAuthResponseDTO;
+import com.ddoddii.resume.dto.user.UserDTO;
+import com.ddoddii.resume.dto.user.UserEmailLoginRequestDTO;
+import com.ddoddii.resume.dto.user.UserEmailSignUpRequestDTO;
+import com.ddoddii.resume.dto.user.UserGoogleLoginRequestDTO;
 import com.ddoddii.resume.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -56,9 +56,9 @@ public class UserController {
     }
 
     @GetMapping("/current-user")
-    public ResponseEntity<String> getCurrentUser() {
-        User user = userService.getCurrentUser();
-        return ResponseEntity.ok(user.getEmail());
+    public ResponseEntity<UserDTO> getCurrentUser() {
+        UserDTO currentUser = userService.getCurrentUserDTO();
+        return ResponseEntity.ok(currentUser);
     }
 
 }

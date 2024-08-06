@@ -1,12 +1,12 @@
 package com.ddoddii.resume.service;
 
-import com.ddoddii.resume.dto.DuplicateEmailRequestDTO;
-import com.ddoddii.resume.dto.JwtTokenDTO;
-import com.ddoddii.resume.dto.UserAuthResponseDTO;
-import com.ddoddii.resume.dto.UserDTO;
-import com.ddoddii.resume.dto.UserEmailLoginRequestDTO;
-import com.ddoddii.resume.dto.UserEmailSignUpRequestDTO;
-import com.ddoddii.resume.dto.UserGoogleLoginRequestDTO;
+import com.ddoddii.resume.dto.user.DuplicateEmailRequestDTO;
+import com.ddoddii.resume.dto.user.JwtTokenDTO;
+import com.ddoddii.resume.dto.user.UserAuthResponseDTO;
+import com.ddoddii.resume.dto.user.UserDTO;
+import com.ddoddii.resume.dto.user.UserEmailLoginRequestDTO;
+import com.ddoddii.resume.dto.user.UserEmailSignUpRequestDTO;
+import com.ddoddii.resume.dto.user.UserGoogleLoginRequestDTO;
 import com.ddoddii.resume.error.errorcode.UserErrorCode;
 import com.ddoddii.resume.error.exception.BadCredentialsException;
 import com.ddoddii.resume.error.exception.DuplicateIdException;
@@ -24,6 +24,8 @@ import jakarta.transaction.Transactional;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -44,6 +46,8 @@ public class UserService {
     private final TokenProvider tokenProvider;
     private final RefreshTokenService refreshTokenService;
     private static final Integer REMAIN_INTERVIEW = 5;
+
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     // 사용자 회원가입시 사용자 정보와 로그인 토큰도 함께 반환
     public UserAuthResponseDTO emailSignUpAndLogin(UserEmailSignUpRequestDTO userEmailSignUpRequestDTO) {
@@ -115,7 +119,9 @@ public class UserService {
     // 구글 회원가입
     public UserDTO googleSignUp(UserGoogleLoginRequestDTO userGoogleLoginRequestDTO) {
         User encryptedUser = encryptGoogleLoginUser(userGoogleLoginRequestDTO);
+        encryptedUser.setLoginType(LoginType.GOOGLE);
         userRepository.save(encryptedUser);
+        logger.info("{} 가 저장되었습니다. ", encryptedUser.getEmail());
 
         return UserDTO.builder().
                 userId(encryptedUser.getId())
@@ -131,14 +137,17 @@ public class UserService {
         Optional<User> optionalUser = userRepository.findByEmail(userGoogleLoginRequestDTO.getEmail());
 
         User user;
+        //유저 존재하는지 확인
         if (optionalUser.isPresent()) {
             user = optionalUser.get();
-            //유저 존재하는지 확인
+            log.debug("@구글 로그인 : {} 유저는 존재합니다", user.getName());
             if (!PasswordEncrypter.isMatch(userGoogleLoginRequestDTO.getIdToken(), user.getPassword())) {
+                log.debug("@구글 로그인 : {} 유저 비밀번호 오류입니다", user.getName());
                 throw new BadCredentialsException(UserErrorCode.BAD_CREDENTIALS);
             }
         } else {
             // 유저가 존재하지 않으면 회원가입 진행
+            log.debug("@구글 로그인 : 회원가입 진행합니다");
             UserDTO newUser = googleSignUp(userGoogleLoginRequestDTO);
             user = userRepository.findById(newUser.getUserId())
                     .orElseThrow(() -> new RuntimeException("Error during user sign-up"));
@@ -162,9 +171,10 @@ public class UserService {
                 userId(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
-                .loginType(LoginType.EMAIL)
+                .loginType(LoginType.GOOGLE)
                 .remainInterview(user.getRemainInterview())
                 .build();
+        log.debug("@구글 로그인 : {} 로그인 성공", loggedInUser.getEmail());
 
         return UserAuthResponseDTO.builder()
                 .user(loggedInUser)
@@ -217,6 +227,18 @@ public class UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
+    public UserDTO getCurrentUserDTO() {
+        User user = getCurrentUser();
+        return UserDTO.builder().
+                userId(user.getId())
+                .name(user.getName())
+                .loginType(user.getLoginType())
+                .email(user.getEmail())
+                .remainInterview(REMAIN_INTERVIEW)
+                .build();
+    }
+
+
     // 비밀번호 보안 적용한 사용자 반환
     private User encryptUser(UserEmailSignUpRequestDTO emailSignUpRequestDTO) {
         String encryptedPassword = PasswordEncrypter.encrypt(emailSignUpRequestDTO.getPassword());
@@ -226,6 +248,7 @@ public class UserService {
         user.setEmail(emailSignUpRequestDTO.getEmail());
         user.setRole(RoleType.ROLE_USER);
         user.setRemainInterview(REMAIN_INTERVIEW);
+        user.setLoginType(LoginType.EMAIL);
         return user;
     }
 

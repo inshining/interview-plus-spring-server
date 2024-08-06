@@ -1,5 +1,6 @@
 package com.ddoddii.resume.model;
 
+import com.ddoddii.resume.model.eunm.LoginType;
 import com.ddoddii.resume.model.eunm.RoleType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -46,6 +47,9 @@ public class User extends BaseEntity {
 
     @Column(name = "remain_interview")
     private Integer remainInterview;
+
+    @Enumerated(EnumType.STRING)
+    private LoginType loginType;
 
     @Enumerated(EnumType.STRING)
     @NotNull
