@@ -2,6 +2,7 @@ package com.ddoddii.resume.model.question;
 
 import com.ddoddii.resume.model.Interview;
 import com.ddoddii.resume.model.Resume;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -22,6 +23,10 @@ public class PersonalQuestion extends BaseQuestionEntity {
     @ManyToOne
     @JoinColumn(name = "resume_id")
     private Resume resume;
+
+    @Column(name = "criteria", length = 2000)
+    private String criteria;
+
 
     @ManyToOne
     @JoinColumn(name = "interview_id")

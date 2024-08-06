@@ -18,6 +18,9 @@ public class TechQuestion extends BaseQuestionEntity {
     @Column(name = "topic")
     private String topic;
 
-    @Column(name = "example_answer")
+    @Column(name = "position")
+    private String position;
+
+    @Column(name = "example_answer", length = 2000)
     private String exampleAnswer;
 }
