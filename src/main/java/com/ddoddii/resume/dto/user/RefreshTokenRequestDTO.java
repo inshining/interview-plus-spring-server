@@ -1,4 +1,4 @@
-package com.ddoddii.resume.dto;
+package com.ddoddii.resume.dto.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

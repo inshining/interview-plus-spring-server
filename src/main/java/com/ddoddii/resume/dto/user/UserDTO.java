@@ -1,4 +1,4 @@
-package com.ddoddii.resume.dto;
+package com.ddoddii.resume.dto.user;
 
 import com.ddoddii.resume.model.eunm.LoginType;
 import lombok.AllArgsConstructor;

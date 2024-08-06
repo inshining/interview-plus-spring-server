@@ -1,4 +1,4 @@
-package com.ddoddii.resume.dto;
+package com.ddoddii.resume.dto.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DuplicateEmailRequestDTO {
-    private String email;
+public class GoogleLoginResponseDTO {
+    private UserDTO userDTO;
+    private JwtTokenDTO tokenDTO;
 }
