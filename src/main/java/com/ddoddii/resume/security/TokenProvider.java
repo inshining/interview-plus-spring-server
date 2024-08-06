@@ -1,6 +1,6 @@
 package com.ddoddii.resume.security;
 
-import com.ddoddii.resume.dto.JwtTokenDTO;
+import com.ddoddii.resume.dto.user.JwtTokenDTO;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;

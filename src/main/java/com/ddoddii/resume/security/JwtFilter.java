@@ -31,14 +31,21 @@ public class JwtFilter extends GenericFilterBean {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
             throws IOException, ServletException {
+        HttpServletRequest request = (HttpServletRequest) servletRequest;
+        String requestURI = request.getRequestURI();
+
+        log.debug("Processing request for URI: {}", requestURI);
+
         // 1. Request Header 에서 JWT Token 추출
         String token = resolveToken((HttpServletRequest) servletRequest);
 
         // 2. ValidateToken 으로 유효성 검사
         if (token != null && tokenProvider.validateToken(token)) {
+            log.debug("Valid JWT token found for URI: {}", requestURI);
             // 토큰이 유효한 경우 토큰에서 Authentication 객체를 가지고 와서 SecurityContext 에 저장
             Authentication authentication = tokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            log.debug("Authentication set in SecurityContext for user: {}", authentication.getName());
         }
         filterChain.doFilter(servletRequest, servletResponse);
     }
