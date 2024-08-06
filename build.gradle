@@ -7,8 +7,10 @@ plugins {
 group = 'com.ddoddii'
 version = '0.0.1-SNAPSHOT'
 
+
 java {
     sourceCompatibility = '17'
+    targetCompatibility = '17'
 }
 
 configurations {
@@ -37,17 +39,17 @@ dependencies {
     //Spring Security
     implementation 'org.springframework.boot:spring-boot-starter-security'
     //JWT
-    implementation 'io.jsonwebtoken:jjwt:0.11.5'
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+    implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.2'
+    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.2'
+    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.2'
+
     //Oauth2
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     //openai api
     implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter:0.8.0-SNAPSHOT'
     //gcloud sql
-    implementation 'mysql:mysql-connector-java'
     implementation 'com.google.cloud.sql:mysql-socket-factory:1.4.3'
+    implementation 'mysql:mysql-connector-java:8.0.30'
 }
 
 tasks.named('test') {
@@ -68,4 +70,9 @@ sourceSets {
             srcDirs("src/main/resources")
         }
     }
+}
+
+
+tasks.processResources {
+    duplicatesStrategy = DuplicatesStrategy.WARN
 }
