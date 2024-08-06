@@ -1,10 +1,7 @@
 package com.ddoddii.resume.model;
 
-import com.ddoddii.resume.model.eunm.Position;
 import com.ddoddii.resume.model.question.PersonalQuestion;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -32,8 +29,7 @@ public class Resume extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
-    private Position position;
+    private String position;
 
     private String content;
 
