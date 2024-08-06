@@ -59,19 +59,26 @@ public class UserService {
         return emailLogin(loginRequestDTO);
     }
 
+    // 이메일 회원가입
     public UserDTO emailSignUp(UserEmailSignUpRequestDTO userEmailSignUpRequestDTO) {
         if (userRepository.existsByEmail(userEmailSignUpRequestDTO.getEmail())) {
             throw new DuplicateIdException(UserErrorCode.DUPLICATE_USER);
         }
 
-        User encryptedUser = encryptUser(userEmailSignUpRequestDTO);
+        // 사용자 비밀번호 암호화
+        String encryptedPassword = encryptPassword(userEmailSignUpRequestDTO.getPassword());
 
-        userRepository.save(encryptedUser);
+        // 사용자 정보 저장
+        User user = getUser(userEmailSignUpRequestDTO, encryptedPassword);
 
+        // 명시적으로 save 유저 변수 추출
+        User saveUser = userRepository.save(user);
+
+        // 유저 정보 반환
         return UserDTO.builder().
-                userId(encryptedUser.getId())
-                .name(userEmailSignUpRequestDTO.getName())
-                .email(userEmailSignUpRequestDTO.getEmail())
+                userId(saveUser.getId())
+                .name(saveUser.getName())
+                .email(saveUser.getEmail())
                 .loginType(LoginType.EMAIL)
                 .remainInterview(REMAIN_INTERVIEW)
                 .build();
@@ -239,17 +246,22 @@ public class UserService {
     }
 
 
-    // 비밀번호 보안 적용한 사용자 반환
-    private User encryptUser(UserEmailSignUpRequestDTO emailSignUpRequestDTO) {
-        String encryptedPassword = PasswordEncrypter.encrypt(emailSignUpRequestDTO.getPassword());
+
+    // 사용자 유저 정보 반환
+    private User getUser(UserEmailSignUpRequestDTO userEmailSignUpRequestDTO, String encryptedPassword) {
         User user = new User();
         user.setPassword(encryptedPassword);
-        user.setName(emailSignUpRequestDTO.getName());
-        user.setEmail(emailSignUpRequestDTO.getEmail());
+        user.setName(userEmailSignUpRequestDTO.getName());
+        user.setEmail(userEmailSignUpRequestDTO.getEmail());
         user.setRole(RoleType.ROLE_USER);
         user.setRemainInterview(REMAIN_INTERVIEW);
         user.setLoginType(LoginType.EMAIL);
         return user;
+    }
+
+    // 비밀번호 암호화
+    private String encryptPassword(String password) {
+        return PasswordEncrypter.encrypt(password);
     }
 
     private User encryptGoogleLoginUser(UserGoogleLoginRequestDTO googleLoginRequestDTO) {
