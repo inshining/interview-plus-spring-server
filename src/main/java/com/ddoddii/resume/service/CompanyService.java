@@ -29,21 +29,21 @@ public class CompanyService {
     public List<CompanyNameDTO> getCompanyNames() {
         List<CompanyName> companyNames = companyNameRepository.findAll();
         return companyNames.stream()
-                .map(companyName -> new CompanyNameDTO(companyName.getName()))
+                .map(companyName -> new CompanyNameDTO(companyName.getId(), companyName.getName()))
                 .collect(Collectors.toList());
     }
 
     public List<CompanyDeptDTO> getCompanyDepts() {
         List<CompanyDept> companyDepts = companyDeptRepository.findAll();
         return companyDepts.stream()
-                .map(companyDept -> new CompanyDeptDTO(companyDept.getDept()))
+                .map(companyDept -> new CompanyDeptDTO(companyDept.getId(), companyDept.getDept()))
                 .collect(Collectors.toList());
     }
 
     public List<CompanyJobDTO> getCompanyJobs() {
         List<CompanyJob> companyJobs = companyJobRepository.findAll();
         return companyJobs.stream()
-                .map(companyJob -> new CompanyJobDTO(companyJob.getJob()))
+                .map(companyJob -> new CompanyJobDTO(companyJob.getId(), companyJob.getJob()))
                 .collect(Collectors.toList());
     }
 }

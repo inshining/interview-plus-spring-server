@@ -1,10 +1,7 @@
 package com.ddoddii.resume.model.company;
 
-import com.ddoddii.resume.model.eunm.CompanyDepartment;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -28,7 +25,6 @@ public class CompanyDept {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "dept")
-    private CompanyDepartment dept;
+    private String dept;
 }

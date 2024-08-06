@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CompanyDeptDTO {
+    private long companyDeptId;
     private String companyDept;
 
     public CompanyDeptDTO(CompanyDepartment dept) {
