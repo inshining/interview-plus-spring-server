@@ -1,9 +1,6 @@
 package com.ddoddii.resume.model;
 
-import com.ddoddii.resume.model.eunm.InterviewFormat;
 import com.ddoddii.resume.model.eunm.InterviewRound;
-import com.ddoddii.resume.model.eunm.InterviewTarget;
-import com.ddoddii.resume.model.eunm.InterviewType;
 import com.ddoddii.resume.model.question.PersonalQuestion;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,13 +12,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.List;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /*
 @ManyToOne : 자식 엔티티(FK를 들고있는 쪽)
@@ -35,28 +31,25 @@ Interview(다) - User(1) : 양방향
 @Table(name = "interview")
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Getter
+@Setter
 public class Interview extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "interview_target")
-    private InterviewTarget interviewTarget;
-
-    @Enumerated(EnumType.STRING)
     @Column(name = "interview_round")
     private InterviewRound interviewRound;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "interview_format")
-    private InterviewFormat interviewFormat;
+    @Column(name = "company_id")
+    private int companyId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "interview_type")
-    private InterviewType interviewType;
+    @Column(name = "job_id")
+    private int jobId;
+
+    @Column(name = "department_id")
+    private int departmentId;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "resume_id")
@@ -69,8 +62,16 @@ public class Interview extends BaseEntity {
     @OneToMany(mappedBy = "interview")
     private List<PersonalQuestion> personalQuestions;
 
-    @OneToOne(mappedBy = "interview")
-    private Evaluation evaluation;
 
+    @OneToMany
+    private List<Evaluation> introduceEval;
 
+    @OneToMany
+    private List<Evaluation> personalEval;
+
+    @OneToMany
+    private List<Evaluation> techEval;
+
+    @OneToMany
+    private List<Evaluation> behaviorEval;
 }
