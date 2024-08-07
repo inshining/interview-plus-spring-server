@@ -5,20 +5,26 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.ArgumentMatchers.*;
 
-import com.ddoddii.resume.dto.user.UserDTO;
-import com.ddoddii.resume.dto.user.UserEmailSignUpRequestDTO;
+import com.ddoddii.resume.dto.user.*;
+import com.ddoddii.resume.error.errorcode.UserErrorCode;
+import com.ddoddii.resume.error.exception.BadCredentialsException;
 import com.ddoddii.resume.error.exception.DuplicateIdException;
 import com.ddoddii.resume.model.User;
 import com.ddoddii.resume.model.eunm.LoginType;
+import com.ddoddii.resume.model.eunm.RoleType;
 import com.ddoddii.resume.repository.RefreshTokenRepository;
 import com.ddoddii.resume.repository.UserRepository;
 import com.ddoddii.resume.security.TokenProvider;
+import com.ddoddii.resume.util.PasswordEncrypter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+
+import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -84,4 +90,82 @@ class UserServiceTest {
         assertThrows(DuplicateIdException.class, () -> userService.emailSignUp(userEmailSignUpRequestDTO));
     }
 
+    @DisplayName("이메일 로그인 - 성공")
+    @Test
+    void emailLogin() {
+        // given
+        String userName = "abc";
+
+        UserEmailLoginRequestDTO request = UserEmailLoginRequestDTO.builder()
+                .email("abc@example.com")
+                .password("1234")
+                .build();
+
+        Optional<User> savedUser = Optional.ofNullable(User.builder()
+                .email(request.getEmail())
+                .password(PasswordEncrypter.encrypt(request.getPassword()))
+                .name("abc")
+                .id(1L)
+                .loginType(LoginType.EMAIL)
+                .role(RoleType.ROLE_USER)
+                .build());
+        given(userRepository.findByEmail(anyString())).willReturn(savedUser);
+
+        String grantType = "Bearer";
+        String accessToken = "accessToken";
+        String refreshToken = "refreshToken";
+
+        given(tokenProvider.createToken(any(UsernamePasswordAuthenticationToken.class))).willReturn(JwtTokenDTO.builder()
+                        .grantType(grantType)
+                        .accessToken(accessToken)
+                        .refreshToken(refreshToken).build());
+
+        // when
+        UserAuthResponseDTO response = userService.emailLogin(request);
+
+        // then
+        assertNotNull(response);
+        assertEquals(request.getEmail(), response.getUser().getEmail());
+        assertEquals(userName, response.getUser().getName());
+        assertEquals(grantType, response.getToken().getGrantType());
+    }
+
+    @DisplayName("실패: 이메일 로그인 - 일치하는 이용자가 없을 경우")
+    @Test
+    void emailLoginWithWrongEmail() {
+        // given
+        UserEmailLoginRequestDTO request = UserEmailLoginRequestDTO.builder()
+                .email("")
+                .password("")
+                .build();
+
+        // then
+        BadCredentialsException exception = assertThrows(BadCredentialsException.class, () -> userService.emailLogin(request));
+        assertEquals(UserErrorCode.BAD_CREDENTIALS, exception.getErrorCode());
+    }
+
+    @DisplayName("실패: 이메일 로그인 - 비밀번호 일치하지 않음")
+    @Test
+    void emailLoginWithWrongPassword() {
+        // given
+        UserEmailLoginRequestDTO request = UserEmailLoginRequestDTO.builder()
+                .email("")
+                .password("")
+                .build();
+
+        given(userRepository.findByEmail(anyString())).willReturn(Optional.ofNullable(User.builder()
+                .email(request.getEmail())
+                .password(PasswordEncrypter.encrypt("1234"))
+                .name("abc")
+                .id(1L)
+                .loginType(LoginType.EMAIL)
+                .role(RoleType.ROLE_USER)
+                .build()));
+
+        // when
+        BadCredentialsException exception = assertThrows(BadCredentialsException.class, () -> userService.emailLogin(request));
+
+        // then
+        assertEquals(UserErrorCode.BAD_CREDENTIALS, exception.getErrorCode());
+    }
 }
