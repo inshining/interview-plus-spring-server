@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BehaviorQuestionRepository extends JpaRepository<BehaviorQuestion, Long> {
     List<BehaviorQuestion> findAll();
+
+    BehaviorQuestion findBehaviorQuestionById(long questionId);
 }
