@@ -98,8 +98,8 @@ public class UserService {
 
         // Authorities 를 가지는 Authentication 객체
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                userLoginRequestDTO.getEmail(),
-                userLoginRequestDTO.getPassword(),
+                user.getEmail(),
+                user.getPassword(),
                 customUserDetails.getAuthorities()
         );
 
