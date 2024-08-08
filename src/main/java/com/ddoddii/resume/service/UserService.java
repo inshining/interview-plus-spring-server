@@ -125,15 +125,21 @@ public class UserService {
 
     // 구글 회원가입
     public UserDTO googleSignUp(UserGoogleLoginRequestDTO userGoogleLoginRequestDTO) {
+        // 이미 존재하는 이메일인지 확인
+        if (userRepository.existsByEmail(userGoogleLoginRequestDTO.getEmail())) {
+            throw new DuplicateIdException(UserErrorCode.DUPLICATE_USER);
+        }
+
+
         User encryptedUser = encryptGoogleLoginUser(userGoogleLoginRequestDTO);
         encryptedUser.setLoginType(LoginType.GOOGLE);
-        userRepository.save(encryptedUser);
+        User saveUser = userRepository.save(encryptedUser);
         logger.info("{} 가 저장되었습니다. ", encryptedUser.getEmail());
 
         return UserDTO.builder().
-                userId(encryptedUser.getId())
-                .name(userGoogleLoginRequestDTO.getName())
-                .email(userGoogleLoginRequestDTO.getEmail())
+                userId(saveUser.getId())
+                .name(saveUser.getName())
+                .email(saveUser.getEmail())
                 .loginType(LoginType.EMAIL)
                 .remainInterview(REMAIN_INTERVIEW)
                 .build();
