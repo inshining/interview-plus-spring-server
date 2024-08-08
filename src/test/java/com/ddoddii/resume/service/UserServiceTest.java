@@ -16,6 +16,7 @@ import com.ddoddii.resume.repository.RefreshTokenRepository;
 import com.ddoddii.resume.repository.UserRepository;
 import com.ddoddii.resume.security.TokenProvider;
 import com.ddoddii.resume.util.PasswordEncrypter;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,23 +45,35 @@ class UserServiceTest {
     @Mock
     private RefreshTokenService refreshTokenService;
 
+    private final String email = "abc@google.com";
+    private final String password = "password1234";
+    private final String name = "abc";
+    private User user;
+
+    @BeforeEach
+    void setUp() {
+        user = User.builder()
+                .email(email)
+                .password(PasswordEncrypter.encrypt(password))
+                .name(name)
+                .id(1L)
+                .loginType(LoginType.EMAIL)
+                .role(RoleType.ROLE_USER)
+                .build();
+    }
+
     @DisplayName("이메일 회원가입")
     @Test
     void emailSignUp() {
         // given
         UserEmailSignUpRequestDTO userEmailSignUpRequestDTO = UserEmailSignUpRequestDTO.builder()
-                .email("abc@google.com")
-                .password("1234")
-                .name("abc")
+                .email(email)
+                .password(password)
+                .name(name)
                 .build();
 
         given(userRepository.existsByEmail(anyString())).willReturn(false);
-        given(userRepository.save(any(User.class))).willReturn(User.builder()
-                .email(userEmailSignUpRequestDTO.getEmail())
-                .password(userEmailSignUpRequestDTO.getPassword())
-                .name(userEmailSignUpRequestDTO.getName())
-                .id(1L)
-                .build());
+        given(userRepository.save(any(User.class))).willReturn(user);
 
         // when
         UserDTO userDTO = userService.emailSignUp(userEmailSignUpRequestDTO);
@@ -79,9 +92,9 @@ class UserServiceTest {
     void emailSignUpWithExistedEmail() {
         // given
         UserEmailSignUpRequestDTO userEmailSignUpRequestDTO = UserEmailSignUpRequestDTO.builder()
-                .email("abc@google.com")
-                .password("1234")
-                .name("abc")
+                .email(email)
+                .password(password)
+                .name(name)
                 .build();
 
         given(userRepository.existsByEmail(anyString())).willReturn(true);
@@ -94,21 +107,13 @@ class UserServiceTest {
     @Test
     void emailLogin() {
         // given
-        String userName = "abc";
 
         UserEmailLoginRequestDTO request = UserEmailLoginRequestDTO.builder()
-                .email("abc@example.com")
-                .password("1234")
+                .email(email)
+                .password(password)
                 .build();
 
-        Optional<User> savedUser = Optional.ofNullable(User.builder()
-                .email(request.getEmail())
-                .password(PasswordEncrypter.encrypt(request.getPassword()))
-                .name("abc")
-                .id(1L)
-                .loginType(LoginType.EMAIL)
-                .role(RoleType.ROLE_USER)
-                .build());
+        Optional<User> savedUser = Optional.ofNullable(user);
         given(userRepository.findByEmail(anyString())).willReturn(savedUser);
 
         String grantType = "Bearer";
@@ -126,7 +131,7 @@ class UserServiceTest {
         // then
         assertNotNull(response);
         assertEquals(request.getEmail(), response.getUser().getEmail());
-        assertEquals(userName, response.getUser().getName());
+        assertEquals(name, response.getUser().getName());
         assertEquals(grantType, response.getToken().getGrantType());
     }
 
@@ -149,23 +154,55 @@ class UserServiceTest {
     void emailLoginWithWrongPassword() {
         // given
         UserEmailLoginRequestDTO request = UserEmailLoginRequestDTO.builder()
-                .email("")
+                .email(email)
                 .password("")
                 .build();
 
-        given(userRepository.findByEmail(anyString())).willReturn(Optional.ofNullable(User.builder()
-                .email(request.getEmail())
-                .password(PasswordEncrypter.encrypt("1234"))
-                .name("abc")
-                .id(1L)
-                .loginType(LoginType.EMAIL)
-                .role(RoleType.ROLE_USER)
-                .build()));
+        given(userRepository.findByEmail(anyString())).willReturn(Optional.ofNullable(user));
 
         // when
         BadCredentialsException exception = assertThrows(BadCredentialsException.class, () -> userService.emailLogin(request));
 
         // then
         assertEquals(UserErrorCode.BAD_CREDENTIALS, exception.getErrorCode());
+    }
+
+    @DisplayName("성공: 구글 회원가입 - 새로운 회원")
+    @Test
+    void googleSignUp() {
+        // given
+        UserGoogleLoginRequestDTO request = UserGoogleLoginRequestDTO.builder()
+                .idToken("idToken")
+                .name(name)
+                .email(email)
+                .build();
+
+        given(userRepository.save(any(User.class))).willReturn(user);
+        // when
+        UserDTO userDTO = userService.googleSignUp(request);
+
+        // then
+        assertNotNull(userDTO);
+        assertEquals(request.getEmail(), userDTO.getEmail());
+        assertEquals(request.getName(), userDTO.getName());
+        assertEquals(LoginType.EMAIL, userDTO.getLoginType());
+        assertEquals(1L, userDTO.getUserId());
+    }
+
+    @DisplayName("실패: 구글 회원가입 - 이미 존재하는 회원")
+    @Test
+    void googleSignUpWithExistedUser() {
+        // given
+        UserGoogleLoginRequestDTO request = UserGoogleLoginRequestDTO.builder()
+                .idToken("idToken")
+                .name(name)
+                .email(email)
+                .build();
+
+        given(userRepository.existsByEmail(anyString())).willReturn(true);
+
+        // then
+        DuplicateIdException duplicateIdException = assertThrows(DuplicateIdException.class, () -> userService.googleSignUp(request));
+        assertEquals(UserErrorCode.DUPLICATE_USER, duplicateIdException.getErrorCode());
     }
 }
