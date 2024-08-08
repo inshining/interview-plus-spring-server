@@ -69,7 +69,7 @@ public class UserService {
         String encryptedPassword = encryptPassword(userEmailSignUpRequestDTO.getPassword());
 
         // 사용자 정보 저장
-        User user = getUser(userEmailSignUpRequestDTO, encryptedPassword);
+        User user = User.signUpUser(userEmailSignUpRequestDTO.getName(), userEmailSignUpRequestDTO.getEmail(), encryptedPassword);
 
         // 명시적으로 save 유저 변수 추출
         User saveUser = userRepository.save(user);
@@ -130,11 +130,13 @@ public class UserService {
             throw new DuplicateIdException(UserErrorCode.DUPLICATE_USER);
         }
 
+        // 비밀번호 암호화
+        String encryptPassword = encryptPassword(userGoogleLoginRequestDTO.getIdToken());
+        User user = User.signUpUser(userGoogleLoginRequestDTO.getName(), userGoogleLoginRequestDTO.getEmail(), encryptPassword);
+        user.setLoginType(LoginType.GOOGLE);
 
-        User encryptedUser = encryptGoogleLoginUser(userGoogleLoginRequestDTO);
-        encryptedUser.setLoginType(LoginType.GOOGLE);
-        User saveUser = userRepository.save(encryptedUser);
-        logger.info("{} 가 저장되었습니다. ", encryptedUser.getEmail());
+        User saveUser = userRepository.save(user);
+        logger.info("{} 가 저장되었습니다. ", user.getEmail());
 
         return UserDTO.builder().
                 userId(saveUser.getId())
@@ -251,34 +253,9 @@ public class UserService {
                 .build();
     }
 
-
-
-    // 사용자 유저 정보 반환
-    private User getUser(UserEmailSignUpRequestDTO userEmailSignUpRequestDTO, String encryptedPassword) {
-        User user = new User();
-        user.setPassword(encryptedPassword);
-        user.setName(userEmailSignUpRequestDTO.getName());
-        user.setEmail(userEmailSignUpRequestDTO.getEmail());
-        user.setRole(RoleType.ROLE_USER);
-        user.setRemainInterview(REMAIN_INTERVIEW);
-        user.setLoginType(LoginType.EMAIL);
-        return user;
-    }
-
     // 비밀번호 암호화
     private String encryptPassword(String password) {
         return PasswordEncrypter.encrypt(password);
-    }
-
-    private User encryptGoogleLoginUser(UserGoogleLoginRequestDTO googleLoginRequestDTO) {
-        String encryptedIdToken = PasswordEncrypter.encrypt(googleLoginRequestDTO.getIdToken());
-        User user = new User();
-        user.setPassword(encryptedIdToken);
-        user.setName(googleLoginRequestDTO.getName());
-        user.setEmail(googleLoginRequestDTO.getEmail());
-        user.setRole(RoleType.ROLE_USER);
-        user.setRemainInterview(REMAIN_INTERVIEW);
-        return user;
     }
 
 }

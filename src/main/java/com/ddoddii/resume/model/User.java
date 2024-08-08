@@ -31,6 +31,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class User extends BaseEntity {
+    private static final Integer REMAIN_INTERVIEW = 5;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -61,5 +62,15 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user")
     private List<Interview> interviews;
 
+    public static User signUpUser(String name, String email, String encryptedPassword){
+        return User.builder()
+                .name(name)
+                .email(email)
+                .password(encryptedPassword)
+                .loginType(LoginType.EMAIL)
+                .role(RoleType.ROLE_USER)
+                .remainInterview(REMAIN_INTERVIEW)
+                .build();
+    }
 
 }
