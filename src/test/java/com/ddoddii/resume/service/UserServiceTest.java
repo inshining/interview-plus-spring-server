@@ -205,4 +205,87 @@ class UserServiceTest {
         DuplicateIdException duplicateIdException = assertThrows(DuplicateIdException.class, () -> userService.googleSignUp(request));
         assertEquals(UserErrorCode.DUPLICATE_USER, duplicateIdException.getErrorCode());
     }
+
+    @DisplayName("성공: 구글 로그인 - 기존 회원")
+    @Test
+    void googleLoginExistingUser() {
+        // given
+        UserGoogleLoginRequestDTO request = UserGoogleLoginRequestDTO.builder()
+                .idToken(password)
+                .name(name)
+                .email(email)
+                .build();
+
+        given(userRepository.findByEmail(anyString())).willReturn(Optional.ofNullable(user));
+
+        String grantType = "Bearer";
+        String accessToken = "accessToken";
+        String refreshToken = "refreshToken";
+
+        given(tokenProvider.createToken(any(UsernamePasswordAuthenticationToken.class))).willReturn(JwtTokenDTO.builder()
+                .grantType(grantType)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken).build());
+
+        // when
+        UserAuthResponseDTO response = userService.googleLogin(request);
+
+        // then
+        assertNotNull(response);
+        assertEquals(request.getEmail(), response.getUser().getEmail());
+        assertEquals(name, response.getUser().getName());
+        assertEquals(grantType, response.getToken().getGrantType());
+    }
+
+    @DisplayName("성공: 구글 로그인 - 신규 회원")
+    @Test
+    void googleLoginNewUser() {
+        // given
+        UserGoogleLoginRequestDTO request = UserGoogleLoginRequestDTO.builder()
+                .idToken(password)
+                .name(name)
+                .email(email)
+                .build();
+
+        given(userRepository.findByEmail(anyString())).willReturn(Optional.empty());
+        given(userRepository.save(any(User.class))).willReturn(user);
+        given(userRepository.findById(anyLong())).willReturn(Optional.ofNullable(user));
+
+        String grantType = "Bearer";
+        String accessToken = "accessToken";
+        String refreshToken = "refreshToken";
+
+        given(tokenProvider.createToken(any(UsernamePasswordAuthenticationToken.class))).willReturn(JwtTokenDTO.builder()
+                .grantType(grantType)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken).build());
+
+        // when
+        UserAuthResponseDTO response = userService.googleLogin(request);
+
+        // then
+        assertNotNull(response);
+        assertEquals(request.getEmail(), response.getUser().getEmail());
+        assertEquals(name, response.getUser().getName());
+        assertEquals(grantType, response.getToken().getGrantType());
+    }
+
+    @DisplayName("실패: 구글 로그인 - 비밀번호가 일치하지 않는 경우")
+    @Test
+    void googleLoginWithWrongPassword() {
+        // given
+        UserGoogleLoginRequestDTO request = UserGoogleLoginRequestDTO.builder()
+                .idToken("wrongPassword")
+                .name(name)
+                .email(email)
+                .build();
+
+        given(userRepository.findByEmail(anyString())).willReturn(Optional.ofNullable(user));
+
+        // when
+        BadCredentialsException exception = assertThrows(BadCredentialsException.class, () -> userService.googleLogin(request));
+
+        // then
+        assertEquals(UserErrorCode.BAD_CREDENTIALS, exception.getErrorCode());
+    }
 }
