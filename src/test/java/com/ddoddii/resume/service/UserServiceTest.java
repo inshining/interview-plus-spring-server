@@ -9,6 +9,7 @@ import com.ddoddii.resume.dto.user.*;
 import com.ddoddii.resume.error.errorcode.UserErrorCode;
 import com.ddoddii.resume.error.exception.BadCredentialsException;
 import com.ddoddii.resume.error.exception.DuplicateIdException;
+import com.ddoddii.resume.model.RefreshToken;
 import com.ddoddii.resume.model.User;
 import com.ddoddii.resume.model.eunm.LoginType;
 import com.ddoddii.resume.model.eunm.RoleType;
@@ -287,5 +288,52 @@ class UserServiceTest {
 
         // then
         assertEquals(UserErrorCode.BAD_CREDENTIALS, exception.getErrorCode());
+    }
+
+    @DisplayName("성공: 프레시 토큰 생성")
+    @Test
+    void generateNewAccessToken() {
+        // given
+        String token = "token1234";
+        RefreshToken refreshToken = RefreshToken.builder()
+                .id(1L)
+                .user(user)
+                .refreshToken(token)
+                .build();
+
+        given(refreshTokenService.findByRefreshToken(anyString())).willReturn(Optional.ofNullable(refreshToken));
+
+        String grantType = "Bearer";
+        String accessToken = "accessToken";
+        String refreshTokenStr = "refreshToken";
+
+        given(tokenProvider.createToken(any(UsernamePasswordAuthenticationToken.class))).willReturn(JwtTokenDTO.builder()
+                .grantType(grantType)
+                .accessToken(accessToken)
+                .refreshToken(refreshTokenStr).build());
+
+        // when
+        JwtTokenDTO jwtTokenDTO = userService.generateNewAccessToken(token);
+
+        // then
+        assertNotNull(jwtTokenDTO);
+        assertEquals(grantType, jwtTokenDTO.getGrantType());
+        assertEquals(accessToken, jwtTokenDTO.getAccessToken());
+        assertEquals(refreshTokenStr, jwtTokenDTO.getRefreshToken());
+    }
+
+    @DisplayName("실패: 프레시 토큰 생성 - 프레시 토큰이 존재하지 않는 경우")
+    @Test
+    void generateNewAccessTokenWithNoRefreshToken() {
+        // given
+        String refreshTokenParm = "token123";
+        given(refreshTokenService.findByRefreshToken(anyString())).willReturn(Optional.empty());
+
+        // when
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> userService.generateNewAccessToken(refreshTokenParm));
+
+        // then
+        assertEquals("Refresh Token not found", exception.getMessage());
+
     }
 }
