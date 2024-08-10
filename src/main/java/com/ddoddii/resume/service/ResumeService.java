@@ -27,8 +27,10 @@ public class ResumeService {
     public ResumeResponseDTO uploadResume(ResumeDTO resumeUploadRequestDTO) {
         User user = userService.getCurrentUser();
         Resume resume = Resume.builder()
+                .name(resumeUploadRequestDTO.getName())
                 .position(resumeUploadRequestDTO.getPosition())
                 .content(resumeUploadRequestDTO.getContent())
+                .isDefault(resumeUploadRequestDTO.isDefault())
                 .user(user)
                 .build();
 

@@ -12,6 +12,9 @@ import lombok.Setter;
 @Setter
 @Builder
 public class ResumeDTO {
+    private String name;
     private String position;
     private String content;
+    private boolean isDefault;
+
 }

@@ -33,6 +33,10 @@ public class Resume extends BaseEntity {
 
     private String content;
 
+    private String name;
+
+    private boolean isDefault;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
