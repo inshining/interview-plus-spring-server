@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class CompanyController {
 
     private final CompanyService companyService;
-
+    
     @GetMapping("/name")
     public ResponseEntity<List<CompanyNameDTO>> getCompanyNames() {
         List<CompanyNameDTO> companyNameDTOs = companyService.getCompanyNames();

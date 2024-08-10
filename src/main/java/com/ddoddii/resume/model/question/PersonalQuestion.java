@@ -27,7 +27,6 @@ public class PersonalQuestion extends BaseQuestionEntity {
     @Column(name = "criteria", length = 2000)
     private String criteria;
 
-
     @ManyToOne
     @JoinColumn(name = "interview_id")
     private Interview interview;

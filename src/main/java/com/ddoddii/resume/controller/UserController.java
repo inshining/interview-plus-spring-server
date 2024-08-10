@@ -60,5 +60,4 @@ public class UserController {
         UserDTO currentUser = userService.getCurrentUserDTO();
         return ResponseEntity.ok(currentUser);
     }
-
 }
