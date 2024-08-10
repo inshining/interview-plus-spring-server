@@ -57,7 +57,8 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("https://d419-175-114-74-80.ngrok-free.app", "http://localhost:3000"));
+        configuration.setAllowedOrigins(List.of("https://d419-175-114-74-80.ngrok-free.app", "http://localhost:3000",
+                "https://c489-110-12-35-131.ngrok-free.app"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
         configuration.setExposedHeaders(List.of("x-auth-token"));
