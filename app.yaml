@@ -1,0 +1,6 @@
+runtime: java17
+entrypoint: java -jar target/resume-0.0.1-SNAPSHOT.jar
+
+handlers:
+  - url: /.*
+    script: auto
