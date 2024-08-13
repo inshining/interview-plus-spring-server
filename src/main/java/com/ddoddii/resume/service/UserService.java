@@ -78,7 +78,7 @@ public class UserService {
                 userId(saveUser.getId())
                 .name(saveUser.getName())
                 .email(saveUser.getEmail())
-                .loginType(LoginType.EMAIL)
+                .loginType(saveUser.getLoginType())
                 .remainInterview(REMAIN_INTERVIEW)
                 .build();
     }
@@ -132,9 +132,7 @@ public class UserService {
                 userId(saveUser.getId())
                 .name(saveUser.getName())
                 .email(saveUser.getEmail())
-                // TODO: Enum 값이 잘못 설정되어 있음.
-                // LoginType.GOOGLE 로 설정해야 함.
-                .loginType(LoginType.EMAIL)
+                .loginType(saveUser.getLoginType())
                 .remainInterview(REMAIN_INTERVIEW)
                 .build();
     }
@@ -157,8 +155,6 @@ public class UserService {
             log.debug("@구글 로그인 : 회원가입 진행합니다");
             UserDTO newUser = googleSignUp(userGoogleLoginRequestDTO);
 
-            // TODO: 무엇을 검증하기 위한 코드인지 설명이 필요.
-            // googleSignUp 메소드이 성공적으로 동작했다면 디비에 유저 정보가 저장되는 것이 보장되어 있음.
             user = userRepository.findById(newUser.getUserId())
                     .orElseThrow(() -> new RuntimeException("Error during user sign-up"));
         }
@@ -173,7 +169,7 @@ public class UserService {
                 userId(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
-                .loginType(LoginType.GOOGLE)
+                .loginType(user.getLoginType())
                 .remainInterview(user.getRemainInterview())
                 .build();
         log.debug("@구글 로그인 : {} 로그인 성공", loggedInUser.getEmail());
