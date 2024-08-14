@@ -204,7 +204,7 @@ public class UserService {
     // refreshToken 기반 accessToken 재발급
     public JwtTokenDTO generateNewAccessToken(String token) {
         RefreshToken refreshToken = refreshTokenService.findByRefreshToken(token)
-                .orElseThrow(() -> new RuntimeException("Refresh Token not found"));
+                .orElseThrow(() -> new NotExistIdException(UserErrorCode.NOT_EXIST_USER));
         User user = refreshToken.getUser();
 
         // JWT 토큰 만들기
