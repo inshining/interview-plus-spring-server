@@ -50,6 +50,12 @@ dependencies {
     //gcloud sql
     implementation 'com.google.cloud.sql:mysql-socket-factory:1.4.3'
     implementation 'mysql:mysql-connector-java:8.0.30'
+
+    //test containers (https://java.testcontainers.org/)
+    testImplementation "org.testcontainers:testcontainers:1.20.1"
+    testImplementation "org.testcontainers:junit-jupiter:1.20.1"
+    testImplementation "org.testcontainers:mysql:1.20.1"
+
 }
 
 tasks.named('test') {
