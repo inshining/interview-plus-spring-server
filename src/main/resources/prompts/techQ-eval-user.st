@@ -5,13 +5,15 @@ You will be given an answer to a certain knowledge based interview question.
  Answer in KOREAN.
 
   Question: {question}
-  Example Answer: {exampleAnswer}
+  Example Answer: {example}
   User Answer : {answer}
 
 
-  Respond in a structured JSON format. Please initiate your response with '{{'. WITHOUT ANY ADDITIONAL WORDS:
-  [response format]:
-  {{
+Respond in a structured JSON format. WITHOUT ANY ADDITIONAL WORDS.
+[response format]:
+[
+ {{
     "score": "score",
     "rationale": "rationale",
-  }}
+ }}
+]

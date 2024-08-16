@@ -27,7 +27,6 @@ public class InterviewController {
         return ResponseEntity.ok(interviewStartResponseDTO);
     }
 
-
     @GetMapping("/")
     public ResponseEntity<List<InterviewResultDTO>> getInterviewResults() {
         List<InterviewResultDTO> interviewResultDTOS = interviewService.getInterviewResults();
