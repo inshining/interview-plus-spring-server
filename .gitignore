@@ -46,3 +46,4 @@ src/main/resources/application-oauth.yaml
 src/main/resources/application-openai.yaml
 src/main/resources/application-mysql.yaml
 src/main/resources/resume-plus-key.json
+/src/test/resources/sql/
