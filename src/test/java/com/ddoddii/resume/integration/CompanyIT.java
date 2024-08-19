@@ -18,7 +18,9 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.util.Arrays;
 import java.util.List;
 
-@Sql(scripts = "classpath:sql/company_name_backup.sql")
+import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_CLASS;
+
+@Sql(executionPhase = BEFORE_TEST_CLASS,scripts = {"classpath:sql/company_name.sql", "classpath:sql/company_dept.sql", "classpath:sql/company_job.sql"})
 @Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CompanyIT {
@@ -46,6 +48,21 @@ public class CompanyIT {
         Assertions.assertEquals(213, list.size());
     }
 
+    @DisplayName("성공: 회사 부서 리스팅")
+    @Test
+    void testCompanyDept(){
+        CompanyNameDTO[] companyNameDTOS = testRestTemplate.getForObject("/api/company/department", CompanyNameDTO[].class );
+        List<CompanyNameDTO> list = Arrays.asList(companyNameDTOS);
+        Assertions.assertEquals(18, list.size());
+    }
+
+    @DisplayName("성공: 회사 직무 리스팅")
+    @Test
+    void testCompanyJob(){
+        CompanyNameDTO[] companyNameDTOS = testRestTemplate.getForObject("/api/company/job", CompanyNameDTO[].class );
+        List<CompanyNameDTO> list = Arrays.asList(companyNameDTOS);
+        Assertions.assertEquals(406, list.size());
+    }
 
 
 }
