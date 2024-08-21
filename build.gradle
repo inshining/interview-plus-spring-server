@@ -53,6 +53,14 @@ dependencies {
 
     // swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
+
+    //json parser
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.0'
+    //email
+    implementation 'javax.mail:javax.mail-api:1.6.2'
+    implementation 'com.sun.mail:javax.mail:1.6.2'
+    //firebase
+    implementation 'com.google.firebase:firebase-admin:8.1.0'
 }
 
 tasks.named('test') {
@@ -78,4 +86,10 @@ sourceSets {
 
 tasks.processResources {
     duplicatesStrategy = DuplicatesStrategy.WARN
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
