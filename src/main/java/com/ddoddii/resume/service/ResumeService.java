@@ -26,6 +26,7 @@ public class ResumeService {
     // 사용자 레쥬메 업로드
     public ResumeResponseDTO uploadResume(ResumeDTO resumeUploadRequestDTO) {
         User user = userService.getCurrentUser();
+        log.debug("@uploadResume 현재 유저 이름 : {} ", user.getName());
         Resume resume = Resume.builder()
                 .name(resumeUploadRequestDTO.getName())
                 .position(resumeUploadRequestDTO.getPosition())
@@ -39,6 +40,7 @@ public class ResumeService {
         return ResumeResponseDTO.builder()
                 .userId(user.getId())
                 .resumeId(resume.getId())
+                .isDefault(resume.isDefault())
                 .build();
     }
 
