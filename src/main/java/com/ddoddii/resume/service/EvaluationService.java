@@ -1,11 +1,15 @@
 package com.ddoddii.resume.service;
 
 import com.ddoddii.resume.dto.evaluation.AnswerRequestDTO;
+import com.ddoddii.resume.model.Evaluation;
+import com.ddoddii.resume.model.Interview;
+import com.ddoddii.resume.model.eunm.QuestionType;
 import com.ddoddii.resume.model.question.BehaviorQuestion;
 import com.ddoddii.resume.model.question.IntroduceQuestion;
 import com.ddoddii.resume.model.question.PersonalQuestion;
 import com.ddoddii.resume.model.question.TechQuestion;
 import com.ddoddii.resume.repository.BehaviorQuestionRepository;
+import com.ddoddii.resume.repository.EvaluationRepository;
 import com.ddoddii.resume.repository.InterviewRepository;
 import com.ddoddii.resume.repository.IntroduceQuestionRepository;
 import com.ddoddii.resume.repository.PersonalQuestionRepository;
@@ -53,9 +57,11 @@ public class EvaluationService {
     private final TechQuestionRepository techQuestionRepository;
     private final IntroduceQuestionRepository introduceQuestionRepository;
     private final BehaviorQuestionRepository behaviorQuestionRepository;
+    private final EvaluationRepository evaluationRepository;
     private final OpenAiChatClient chatClient;
 
     public String evaluatePerQAnswer(AnswerRequestDTO answerRequestDTO) {
+        Interview currentInterview = interviewRepository.findInterviewById(answerRequestDTO.getInterviewId());
         PersonalQuestion personalQuestion = personalQuestionRepository.findPersonalQuestionById(
                 answerRequestDTO.getQuestionId());
         String criteria = personalQuestion.getCriteria();
@@ -63,21 +69,31 @@ public class EvaluationService {
         String answer = answerRequestDTO.getAnswer();
         Prompt prompt = generatePersonalEvaluationPrompt(question, answer, criteria);
         ChatResponse response = chatClient.call(prompt);
+        String gptEvaluation = response.getResult().getOutput().getContent();
+        saveEvaluation(currentInterview, answerRequestDTO.getQuestionId(), QuestionType.PERSONAL, question, answer,
+                gptEvaluation);
 
-        return response.getResult().getOutput().getContent();
+        return gptEvaluation;
     }
 
     public String evaluateTechQAnswer(AnswerRequestDTO answerRequestDTO) {
+        Interview currentInterview = interviewRepository.findInterviewById(answerRequestDTO.getInterviewId());
         TechQuestion techQuestion = techQuestionRepository.findTechQuestionById(answerRequestDTO.getQuestionId());
         String exampleAnswer = techQuestion.getExampleAnswer();
         String question = techQuestion.getQuestion();
         String answer = answerRequestDTO.getAnswer();
         Prompt prompt = generateTechEvaluationPrompt(question, exampleAnswer, answer);
         ChatResponse response = chatClient.call(prompt);
-        return response.getResult().getOutput().getContent();
+        String gptEvaluation = response.getResult().getOutput().getContent();
+
+        saveEvaluation(currentInterview, answerRequestDTO.getQuestionId(), QuestionType.PERSONAL, question, answer,
+                gptEvaluation);
+
+        return gptEvaluation;
     }
 
     public String evaluateIntroduceQAnswer(AnswerRequestDTO answerRequestDTO) {
+        Interview currentInterview = interviewRepository.findInterviewById(answerRequestDTO.getInterviewId());
         IntroduceQuestion introduceQuestion = introduceQuestionRepository.findIntroduceQuestionById(
                 answerRequestDTO.getQuestionId());
         String criteria = introduceQuestion.getCriteria();
@@ -85,10 +101,16 @@ public class EvaluationService {
         String answer = answerRequestDTO.getAnswer();
         Prompt prompt = generateIntroduceEvaluationPrompt(question, answer, criteria);
         ChatResponse response = chatClient.call(prompt);
-        return response.getResult().getOutput().getContent();
+        String gptEvaluation = response.getResult().getOutput().getContent();
+
+        saveEvaluation(currentInterview, answerRequestDTO.getQuestionId(), QuestionType.PERSONAL, question, answer,
+                gptEvaluation);
+
+        return gptEvaluation;
     }
 
     public String evaluateBehaviorQAnswer(AnswerRequestDTO answerRequestDTO) {
+        Interview currentInterview = interviewRepository.findInterviewById(answerRequestDTO.getInterviewId());
         BehaviorQuestion behaviorQuestion = behaviorQuestionRepository.findBehaviorQuestionById(
                 answerRequestDTO.getQuestionId());
         String criteria = behaviorQuestion.getCriteria();
@@ -96,7 +118,26 @@ public class EvaluationService {
         String answer = answerRequestDTO.getAnswer();
         Prompt prompt = generateBehavEvaluationPrompt(question, answer, criteria);
         ChatResponse response = chatClient.call(prompt);
-        return response.getResult().getOutput().getContent();
+        String gptEvaluation = response.getResult().getOutput().getContent();
+
+        saveEvaluation(currentInterview, answerRequestDTO.getQuestionId(), QuestionType.PERSONAL, question, answer,
+                gptEvaluation);
+
+        return gptEvaluation;
+    }
+
+    private void saveEvaluation(Interview currentInterview, long questionId, QuestionType questionType,
+                                String askedQuestion,
+                                String userAnswer, String gptEvaluation) {
+        Evaluation evaluation = Evaluation.builder()
+                .interview(currentInterview)
+                .questionId(questionId)
+                .questionType(questionType)
+                .askedQuestion(askedQuestion)
+                .gptEvaluation(gptEvaluation)
+                .userAnswer(userAnswer)
+                .build();
+        evaluationRepository.save(evaluation);
     }
 
     private Prompt generatePersonalEvaluationPrompt(String question, String answer, String criteria) {
