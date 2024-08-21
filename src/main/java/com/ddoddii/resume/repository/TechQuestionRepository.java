@@ -10,4 +10,6 @@ public interface TechQuestionRepository extends JpaRepository<TechQuestion, Long
     TechQuestion findTechQuestionById(long id);
 
     List<TechQuestion> findTechQuestionByPosition(String position);
+
+    List<TechQuestion> findAll();
 }
