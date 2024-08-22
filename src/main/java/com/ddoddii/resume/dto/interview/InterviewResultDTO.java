@@ -1,6 +1,6 @@
 package com.ddoddii.resume.dto.interview;
 
-import com.ddoddii.resume.model.Evaluation;
+import com.ddoddii.resume.dto.evaluation.EvaluationResultDTO;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -15,12 +15,14 @@ import lombok.Setter;
 @Setter
 @Builder
 public class InterviewResultDTO {
+    private long interviewId;
     private int companyId;
+    private String companyName;
     private int jobId;
     private int departmentId;
     private LocalDateTime createdAt;
-    private List<Evaluation> introduceEval;
-    private List<Evaluation> personalEval;
-    private List<Evaluation> techEval;
-    private List<Evaluation> behaviorEval;
+    private List<EvaluationResultDTO> personalFeedback;
+    private List<EvaluationResultDTO> techFeedback;
+    private List<EvaluationResultDTO> behaviorFeedback;
+    private List<EvaluationResultDTO> introduceFeedback;
 }

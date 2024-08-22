@@ -1,5 +1,6 @@
 package com.ddoddii.resume.service;
 
+import com.ddoddii.resume.dto.evaluation.EvaluationResultDTO;
 import com.ddoddii.resume.dto.interview.InterviewResultDTO;
 import com.ddoddii.resume.dto.interview.InterviewStartRequestDTO;
 import com.ddoddii.resume.dto.interview.InterviewStartResponseDTO;
@@ -9,9 +10,15 @@ import com.ddoddii.resume.model.Evaluation;
 import com.ddoddii.resume.model.Interview;
 import com.ddoddii.resume.model.User;
 import com.ddoddii.resume.model.eunm.InterviewRound;
+import com.ddoddii.resume.model.eunm.QuestionType;
+import com.ddoddii.resume.repository.EvaluationRepository;
 import com.ddoddii.resume.repository.InterviewRepository;
 import com.ddoddii.resume.repository.ResumeRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,13 +30,19 @@ import org.springframework.stereotype.Service;
 public class InterviewService {
     private final InterviewRepository interviewRepository;
     private final ResumeRepository resumeRepository;
+    private final EvaluationRepository evaluationRepository;
     private final UserService userService;
 
     public InterviewStartResponseDTO startInterview(InterviewStartRequestDTO interviewStartRequestDTO) {
         Interview interview = new Interview();
         User currentUser = userService.getCurrentUser();
         interview.setInterviewRound(InterviewRound.fromString(interviewStartRequestDTO.getInterviewRound()));
-        interview.setCompanyId(interviewStartRequestDTO.getCompanyId());
+        if (interviewStartRequestDTO.getCompanyId() != null) {
+            interview.setCompanyId(interviewStartRequestDTO.getCompanyId());
+        }
+        if (interviewStartRequestDTO.getCompanyName() != null) {
+            interview.setCompanyName(interviewStartRequestDTO.getCompanyName());
+        }
         interview.setJobId(interviewStartRequestDTO.getJobId());
         interview.setDepartmentId(interview.getDepartmentId());
         interview.setResume(resumeRepository.findById(interviewStartRequestDTO.getResumeId())
@@ -45,6 +58,7 @@ public class InterviewService {
                 .build();
     }
 
+
     public List<InterviewResultDTO> getInterviewResults() {
         User currentUser = userService.getCurrentUser();
         List<Interview> interviews = interviewRepository.findByUser(currentUser);
@@ -53,28 +67,69 @@ public class InterviewService {
                 .collect(Collectors.toList());
     }
 
+    public void deleteCurrentInterview(long interviewId) {
+        Interview interview = interviewRepository.findInterviewById(interviewId);
+        interviewRepository.delete(interview);
+    }
+
 
     private InterviewResultDTO convertToInterviewResultDTO(Interview interview) {
-        InterviewResultDTO dto = new InterviewResultDTO();
-        dto.setCreatedAt(interview.getCreatedAt());
-        dto.setCompanyId(interview.getCompanyId());
-        dto.setJobId(interview.getJobId());
-        dto.setDepartmentId(interview.getDepartmentId());
+        // Retrieve evaluations for the specific interview
+        List<Evaluation> evaluations = evaluationRepository.findByInterviewId(interview.getId());
 
-        List<Evaluation> introduceEvals =
-                interview.getIntroduceEval() != null ? interview.getIntroduceEval() : List.of();
-        List<Evaluation> personalEvals =
-                interview.getPersonalEval() != null ? interview.getPersonalEval() : List.of();
-        List<Evaluation> behaviorEvals =
-                interview.getBehaviorEval() != null ? interview.getBehaviorEval() : List.of();
-        List<Evaluation> techEvals =
-                interview.getTechEval() != null ? interview.getTechEval() : List.of();
+        // Filter evaluations by their question type
+        List<EvaluationResultDTO> personalFeedback = evaluations.stream()
+                .filter(evaluation -> evaluation.getQuestionType() == QuestionType.PERSONAL)
+                .map(this::convertToEvaluationResultDTO)
+                .collect(Collectors.toList());
 
-        dto.setIntroduceEval(introduceEvals);
-        dto.setPersonalEval(personalEvals);
-        dto.setBehaviorEval(behaviorEvals);
-        dto.setTechEval(techEvals);
-        return dto;
+        List<EvaluationResultDTO> techFeedback = evaluations.stream()
+                .filter(evaluation -> evaluation.getQuestionType() == QuestionType.TECH)
+                .map(this::convertToEvaluationResultDTO)
+                .collect(Collectors.toList());
+
+        List<EvaluationResultDTO> behaviorFeedback = evaluations.stream()
+                .filter(evaluation -> evaluation.getQuestionType() == QuestionType.BEHAVIOR)
+                .map(this::convertToEvaluationResultDTO)
+                .collect(Collectors.toList());
+
+        List<EvaluationResultDTO> introduceFeedback = evaluations.stream()
+                .filter(evaluation -> evaluation.getQuestionType() == QuestionType.INTRODUCE)
+                .map(this::convertToEvaluationResultDTO)
+                .collect(Collectors.toList());
+
+        return InterviewResultDTO.builder()
+                .interviewId(interview.getId())
+                .companyId(interview.getCompanyId())
+                .companyName(interview.getCompanyName())
+                .jobId(interview.getJobId())
+                .departmentId(interview.getDepartmentId())
+                .createdAt(interview.getCreatedAt())
+                .personalFeedback(personalFeedback)
+                .techFeedback(techFeedback)
+                .behaviorFeedback(behaviorFeedback)
+                .introduceFeedback(introduceFeedback)
+                .build();
+    }
+
+    private EvaluationResultDTO convertToEvaluationResultDTO(Evaluation evaluation) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<Map<String, Object>> gptEvaluationParsed = new ArrayList<>();
+
+        try {
+            gptEvaluationParsed = objectMapper.readValue(evaluation.getGptEvaluation(),
+                    new TypeReference<List<Map<String, Object>>>() {
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return EvaluationResultDTO.builder()
+                .questionId(evaluation.getQuestionId())
+                .question(evaluation.getAskedQuestion())
+                .userAnswer(evaluation.getUserAnswer())
+                .gptEvaluation(gptEvaluationParsed)
+                .build();
     }
 
 

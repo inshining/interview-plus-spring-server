@@ -5,7 +5,8 @@ import lombok.Getter;
 @Getter
 public enum LoginType {
     GOOGLE("google"),
-    EMAIL("email");
+    EMAIL("email"),
+    GUEST("guest");
 
     private String type;
 

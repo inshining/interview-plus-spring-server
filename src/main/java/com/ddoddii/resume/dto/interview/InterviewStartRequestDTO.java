@@ -11,7 +11,8 @@ import lombok.Setter;
 @Builder
 public class InterviewStartRequestDTO {
     private String interviewRound;
-    private int companyId;
+    private Integer companyId;
+    private String companyName;
     private int departmendId;
     private int jobId;
     private int resumeId;

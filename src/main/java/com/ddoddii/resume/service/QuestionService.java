@@ -90,7 +90,11 @@ public class QuestionService {
         Interview interview = interviewRepository.findInterviewById(interviewId);
         Resume resume = checkResumeOwner(interview.getResume().getId());
         String position = resume.getPosition();
+
         List<TechQuestion> techQuestions = techQuestionRepository.findTechQuestionByPosition(position);
+        if (techQuestions.isEmpty()) {
+            techQuestions = techQuestionRepository.findAll();
+        }
 
         Collections.shuffle(techQuestions);
 

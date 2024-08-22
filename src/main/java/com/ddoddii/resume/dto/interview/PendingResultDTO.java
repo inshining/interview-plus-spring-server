@@ -16,5 +16,6 @@ public class PendingResultDTO {
     private int companyId;
     private int jobId;
     private int departmentId;
+    private long interviewId;
     private LocalDateTime createdAt;
 }

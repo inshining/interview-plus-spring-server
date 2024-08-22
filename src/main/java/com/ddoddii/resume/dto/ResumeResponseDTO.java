@@ -16,4 +16,5 @@ import lombok.ToString;
 public class ResumeResponseDTO {
     private long userId;
     private long resumeId;
+    private boolean isDefault;
 }
