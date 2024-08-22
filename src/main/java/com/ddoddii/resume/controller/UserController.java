@@ -49,13 +49,13 @@ public class UserController {
     }
 
     @PostMapping("/duplicate-email")
-    public ResponseEntity<Boolean> checkDuplicateEmail(@RequestBody DuplicateEmailRequestDTO requestDTO) {
+    public ResponseEntity<Boolean> checkDuplicateEmail(@RequestBody @Valid DuplicateEmailRequestDTO requestDTO) {
         Boolean response = userService.checkDuplicateEmail(requestDTO);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<JwtTokenDTO> refreshToken(@RequestBody RefreshTokenRequestDTO refreshTokenRequestDTO) {
+    public ResponseEntity<JwtTokenDTO> refreshToken(@RequestBody @Valid RefreshTokenRequestDTO refreshTokenRequestDTO) {
         JwtTokenDTO jwtTokenDTO = userService.generateNewAccessToken(refreshTokenRequestDTO.getToken());
         return ResponseEntity.ok(jwtTokenDTO);
     }
