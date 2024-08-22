@@ -28,4 +28,15 @@ public class EvaluationController {
         return ResponseEntity.ok(perQuestionEval);
     }
 
+    @PostMapping("/introduce")
+    public ResponseEntity<String> evaluateIntroduceQuestion(@RequestBody AnswerRequestDTO answerRequestDTO) {
+        String introduceQuestionEval = evaluationService.evaluateIntroduceQAnswer(answerRequestDTO);
+        return ResponseEntity.ok(introduceQuestionEval);
+    }
+
+    @PostMapping("/behavior")
+    public ResponseEntity<String> evaluateBehaviorQuestion(@RequestBody AnswerRequestDTO answerRequestDTO) {
+        String introduceQuestionEval = evaluationService.evaluateBehaviorQAnswer(answerRequestDTO);
+        return ResponseEntity.ok(introduceQuestionEval);
+    }
 }

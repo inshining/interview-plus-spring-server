@@ -1,6 +1,7 @@
 package com.ddoddii.resume.model;
 
 import com.ddoddii.resume.model.question.PersonalQuestion;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -31,7 +32,12 @@ public class Resume extends BaseEntity {
 
     private String position;
 
+    @Column(columnDefinition = "TEXT")
     private String content;
+
+    private String name;
+
+    private boolean isDefault;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -42,4 +48,5 @@ public class Resume extends BaseEntity {
 
     @OneToMany(mappedBy = "resume")
     private List<PersonalQuestion> personalQuestions;
+
 }

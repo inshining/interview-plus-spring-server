@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface IntroduceQuestionRepository extends JpaRepository<IntroduceQuestion, Long> {
     List<IntroduceQuestion> findAll();
+
+    IntroduceQuestion findIntroduceQuestionById(long questionId);
 }

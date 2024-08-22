@@ -12,17 +12,21 @@ import com.ddoddii.resume.error.exception.BadCredentialsException;
 import com.ddoddii.resume.error.exception.DuplicateIdException;
 import com.ddoddii.resume.error.exception.NotExistIdException;
 import com.ddoddii.resume.model.RefreshToken;
+import com.ddoddii.resume.model.Resume;
 import com.ddoddii.resume.model.User;
 import com.ddoddii.resume.model.eunm.LoginType;
 import com.ddoddii.resume.repository.RefreshTokenRepository;
+import com.ddoddii.resume.repository.ResumeRepository;
 import com.ddoddii.resume.repository.UserRepository;
 import com.ddoddii.resume.security.CustomUserDetails;
 import com.ddoddii.resume.security.TokenProvider;
 import com.ddoddii.resume.util.PasswordEncrypter;
 import jakarta.transaction.Transactional;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -41,6 +45,7 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final ResumeRepository resumeRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final TokenProvider tokenProvider;
     private final RefreshTokenService refreshTokenService;
@@ -50,16 +55,16 @@ public class UserService {
 
     // 사용자 회원가입시 사용자 정보와 로그인 토큰도 함께 반환
     public UserAuthResponseDTO emailSignUpAndLogin(UserEmailSignUpRequestDTO userEmailSignUpRequestDTO) {
-        UserDTO newUser = emailSignUp(userEmailSignUpRequestDTO);
+        UserDTO newUser = signUp(userEmailSignUpRequestDTO, LoginType.EMAIL);
         UserEmailLoginRequestDTO loginRequestDTO = UserEmailLoginRequestDTO.builder()
                 .email(newUser.getEmail())
                 .password(userEmailSignUpRequestDTO.getPassword())
                 .build();
-        return emailLogin(loginRequestDTO);
+        return emailLogin(loginRequestDTO, LoginType.EMAIL);
     }
 
     // 이메일 회원가입
-    public UserDTO emailSignUp(UserEmailSignUpRequestDTO userEmailSignUpRequestDTO) {
+    public UserDTO signUp(UserEmailSignUpRequestDTO userEmailSignUpRequestDTO, LoginType loginType) {
         if (userRepository.existsByEmail(userEmailSignUpRequestDTO.getEmail())) {
             throw new DuplicateIdException(UserErrorCode.DUPLICATE_USER);
         }
@@ -68,7 +73,7 @@ public class UserService {
         String encryptedPassword = encryptPassword(userEmailSignUpRequestDTO.getPassword());
 
         // 사용자 정보 저장
-        User user = User.signUpUser(userEmailSignUpRequestDTO.getName(), userEmailSignUpRequestDTO.getEmail(), encryptedPassword);
+        User user = getUser(userEmailSignUpRequestDTO, encryptedPassword, loginType);
 
         // 명시적으로 save 유저 변수 추출
         User saveUser = userRepository.save(user);
@@ -84,7 +89,7 @@ public class UserService {
     }
 
     // 사용자 로그인
-    public UserAuthResponseDTO emailLogin(UserEmailLoginRequestDTO userLoginRequestDTO) {
+    public UserAuthResponseDTO emailLogin(UserEmailLoginRequestDTO userLoginRequestDTO, LoginType loginType) {
         // 이메일로 데이터베이스에서 사용자 찾기
         User user = userRepository.findByEmail(userLoginRequestDTO.getEmail())
                 .orElseThrow(() -> new BadCredentialsException(UserErrorCode.BAD_CREDENTIALS));
@@ -103,7 +108,7 @@ public class UserService {
                 userId(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
-                .loginType(LoginType.EMAIL)
+                .loginType(loginType)
                 .remainInterview(user.getRemainInterview())
                 .build();
 
@@ -184,6 +189,43 @@ public class UserService {
         return userRepository.existsByEmail(requestDTO.getEmail());
     }
 
+    public UserAuthResponseDTO guestSignUpAndLogin() {
+        int length = 15;
+        boolean useLetters = true;
+        boolean useNumbers = false;
+        String generatedRandomId = RandomStringUtils.random(length, useLetters, useNumbers);
+        String randomPassword = RandomStringUtils.random(length, useLetters, useNumbers);
+        UserEmailSignUpRequestDTO guestSignUpRequestDTO = UserEmailSignUpRequestDTO.builder()
+                .email(generatedRandomId)
+                .name("guest")
+                .password(randomPassword)
+                .build();
+        UserDTO guestUser = signUp(guestSignUpRequestDTO, LoginType.GUEST);
+        UserEmailLoginRequestDTO guestLoginRequestDTO = UserEmailLoginRequestDTO.builder()
+                .email(guestUser.getEmail())
+                .password(guestSignUpRequestDTO.getPassword())
+                .build();
+        return emailLogin(guestLoginRequestDTO, LoginType.GUEST);
+    }
+
+    public void guestEmailSignUpAndLogin(UserEmailSignUpRequestDTO 
+                                        ) {
+        User guestUser = getCurrentUser();
+        guestUser.setName(userEmailSignUpRequestDTO.getName());
+        guestUser.setEmail(userEmailSignUpRequestDTO.getEmail());
+        guestUser.setPassword(userEmailSignUpRequestDTO.getPassword());
+        userRepository.save(guestUser);
+    }
+
+    public void guestGoogleSignUpAndLogin(UserGoogleLoginRequestDTO userGoogleLoginRequestDTO) {
+        User guestUser = getCurrentUser();
+        guestUser.setName(userGoogleLoginRequestDTO.getName());
+        guestUser.setEmail(userGoogleLoginRequestDTO.getEmail());
+        String encryptedIdToken = PasswordEncrypter.encrypt(userGoogleLoginRequestDTO.getIdToken());
+        guestUser.setPassword(encryptedIdToken);
+        userRepository.save(guestUser);
+    }
+
 
     // 사용자 삭제
     public void deleteUser(String email) {
@@ -225,15 +267,37 @@ public class UserService {
 
     public UserDTO getCurrentUserDTO() {
         User user = getCurrentUser();
+        Resume defaultResume = null;
+        List<Resume> resumes = resumeRepository.findByUser(user);
+        for (Resume resume : resumes) {
+            if (resume.isDefault()) {
+                defaultResume = resume;
+                break;
+            }
+        }
         return UserDTO.builder().
                 userId(user.getId())
                 .name(user.getName())
                 .loginType(user.getLoginType())
                 .email(user.getEmail())
+                .defaultResume(defaultResume != null ? defaultResume.getName() : null)
                 .remainInterview(REMAIN_INTERVIEW)
                 .build();
     }
 
+
+    // 사용자 유저 정보 반환
+    private User getUser(UserEmailSignUpRequestDTO userEmailSignUpRequestDTO, String encryptedPassword,
+                         LoginType loginType) {
+        User user = new User();
+        user.setPassword(encryptedPassword);
+        user.setName(userEmailSignUpRequestDTO.getName());
+        user.setEmail(userEmailSignUpRequestDTO.getEmail());
+        user.setRole(RoleType.ROLE_USER);
+        user.setRemainInterview(REMAIN_INTERVIEW);
+        user.setLoginType(loginType);
+        return user;
+    }
     // 비밀번호 암호화
     private String encryptPassword(String password) {
         return PasswordEncrypter.encrypt(password);

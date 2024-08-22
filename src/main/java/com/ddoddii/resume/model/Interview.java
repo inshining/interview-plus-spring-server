@@ -2,6 +2,7 @@ package com.ddoddii.resume.model;
 
 import com.ddoddii.resume.model.eunm.InterviewRound;
 import com.ddoddii.resume.model.question.PersonalQuestion;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -45,6 +46,9 @@ public class Interview extends BaseEntity {
     @Column(name = "company_id")
     private int companyId;
 
+    @Column(name = "company_name")
+    private String companyName;
+
     @Column(name = "job_id")
     private int jobId;
 
@@ -59,19 +63,19 @@ public class Interview extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany(mappedBy = "interview")
+    @OneToMany(mappedBy = "interview", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PersonalQuestion> personalQuestions;
 
 
-    @OneToMany
+    @OneToMany(mappedBy = "interview", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Evaluation> introduceEval;
 
-    @OneToMany
+    @OneToMany(mappedBy = "interview", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Evaluation> personalEval;
 
-    @OneToMany
+    @OneToMany(mappedBy = "interview", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Evaluation> techEval;
 
-    @OneToMany
+    @OneToMany(mappedBy = "interview", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Evaluation> behaviorEval;
 }

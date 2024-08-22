@@ -1,0 +1,23 @@
+steps:
+  # Docker Build
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [ 'build', '-t',
+            'asia-northeast3-docker.pkg.dev/resume-plus-429023/cloud-run-source-deploy/test',
+            '.' ]
+
+  # Docker Push
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [ 'push',
+            'asia-northeast3-docker.pkg.dev/resume-plus-429023/cloud-run-source-deploy/test' ]
+
+  # Entrypoint, timeout and environment variables
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    timeout: 240s
+    args: [ 'compute', 'instances',
+            'create-with-container', 'my-vm-name',
+            '--container-image',
+            'asia-northeast3-docker.pkg.dev/football-project-416008/cloud-run-source-deploy/test' ]
+    env:
+      - 'CLOUDSDK_COMPUTE_REGION=asia-northeast3'
+      - 'CLOUDSDK_COMPUTE_ZONE=asia-northeast3-a'

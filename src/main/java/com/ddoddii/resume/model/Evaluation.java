@@ -9,7 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,20 +28,23 @@ public class Evaluation extends BaseEntity {
     private Long id;
 
     // Evaluation 이 Interview의 FK를 가지고 있다 = 연관관계의 주인이다
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "interview_id")
     private Interview interview;
 
     @Column(name = "question_id")
-    private Long question_id;
+    private Long questionId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "question_type")
     private QuestionType questionType;
 
-    @Column(name = "user_answer")
+    @Column(name = "asked_question", columnDefinition = "TEXT")
+    private String askedQuestion;
+
+    @Column(name = "user_answer", columnDefinition = "TEXT")
     private String userAnswer;
 
-    @Column(name = "gpt_evaluation")
+    @Column(name = "gpt_evaluation", columnDefinition = "TEXT")
     private String gptEvaluation;
 }

@@ -1,5 +1,6 @@
 package com.ddoddii.resume.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,6 +13,9 @@ import lombok.Setter;
 @Setter
 @Builder
 public class ResumeDTO {
+    private String name;
     private String position;
     private String content;
+    @JsonProperty("isDefault")
+    private boolean isDefault;
 }
