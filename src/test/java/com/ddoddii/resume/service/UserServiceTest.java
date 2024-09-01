@@ -9,6 +9,7 @@ import com.ddoddii.resume.dto.user.*;
 import com.ddoddii.resume.error.errorcode.UserErrorCode;
 import com.ddoddii.resume.error.exception.BadCredentialsException;
 import com.ddoddii.resume.error.exception.DuplicateIdException;
+import com.ddoddii.resume.error.exception.NotExistIdException;
 import com.ddoddii.resume.model.RefreshToken;
 import com.ddoddii.resume.model.User;
 import com.ddoddii.resume.model.eunm.LoginType;
@@ -75,16 +76,27 @@ class UserServiceTest {
 
         given(userRepository.existsByEmail(anyString())).willReturn(false);
         given(userRepository.save(any(User.class))).willReturn(user);
+        given(userRepository.findByEmail(anyString())).willReturn(Optional.ofNullable(user));
+
+        String grantType = "Bearer";
+        String accessToken = "accessToken";
+        String refreshToken = "refreshToken";
+
+        given(tokenProvider.createToken(any(UsernamePasswordAuthenticationToken.class))).willReturn(JwtTokenDTO.builder()
+                .grantType(grantType)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken).build());
+
 
         // when
-        UserDTO userDTO = userService.emailSignUp(userEmailSignUpRequestDTO);
+        UserAuthResponseDTO userAuthResponseDTO = userService.emailSignUpAndLogin(userEmailSignUpRequestDTO);
 
         // then
-        assertNotNull(userDTO);
-        assertEquals(userEmailSignUpRequestDTO.getEmail(), userDTO.getEmail());
-        assertEquals(userEmailSignUpRequestDTO.getName(), userDTO.getName());
-        assertEquals(LoginType.EMAIL, userDTO.getLoginType());
-        assertEquals(1L, userDTO.getUserId());
+        assertNotNull(userAuthResponseDTO);
+        assertEquals(userEmailSignUpRequestDTO.getEmail(), userAuthResponseDTO.getUser().getEmail());
+        assertEquals(userEmailSignUpRequestDTO.getName(), userAuthResponseDTO.getUser().getName());
+        assertEquals(LoginType.EMAIL, userAuthResponseDTO.getUser().getLoginType());
+        assertEquals(1L, userAuthResponseDTO.getUser().getUserId());
     }
 
 
@@ -101,7 +113,7 @@ class UserServiceTest {
         given(userRepository.existsByEmail(anyString())).willReturn(true);
 
         // then
-        assertThrows(DuplicateIdException.class, () -> userService.emailSignUp(userEmailSignUpRequestDTO));
+        assertThrows(DuplicateIdException.class, () -> userService.emailSignUpAndLogin(userEmailSignUpRequestDTO));
     }
 
     @DisplayName("이메일 로그인 - 성공")
@@ -127,7 +139,7 @@ class UserServiceTest {
                         .refreshToken(refreshToken).build());
 
         // when
-        UserAuthResponseDTO response = userService.emailLogin(request);
+        UserAuthResponseDTO response = userService.emailLogin(request, LoginType.EMAIL);
 
         // then
         assertNotNull(response);
@@ -146,7 +158,7 @@ class UserServiceTest {
                 .build();
 
         // then
-        BadCredentialsException exception = assertThrows(BadCredentialsException.class, () -> userService.emailLogin(request));
+        BadCredentialsException exception = assertThrows(BadCredentialsException.class, () -> userService.emailLogin(request, LoginType.EMAIL));
         assertEquals(UserErrorCode.BAD_CREDENTIALS, exception.getErrorCode());
     }
 
@@ -162,7 +174,7 @@ class UserServiceTest {
         given(userRepository.findByEmail(anyString())).willReturn(Optional.ofNullable(user));
 
         // when
-        BadCredentialsException exception = assertThrows(BadCredentialsException.class, () -> userService.emailLogin(request));
+        BadCredentialsException exception = assertThrows(BadCredentialsException.class, () -> userService.emailLogin(request, LoginType.EMAIL));
 
         // then
         assertEquals(UserErrorCode.BAD_CREDENTIALS, exception.getErrorCode());
@@ -330,10 +342,10 @@ class UserServiceTest {
         given(refreshTokenService.findByRefreshToken(anyString())).willReturn(Optional.empty());
 
         // when
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> userService.generateNewAccessToken(refreshTokenParm));
+        NotExistIdException exception = assertThrows(NotExistIdException.class, () -> userService.generateNewAccessToken(refreshTokenParm));
 
         // then
-        assertEquals("Refresh Token not found", exception.getMessage());
+        assertEquals("Refresh Token not found", exception.getErrorCode().getMessage());
 
     }
 }
