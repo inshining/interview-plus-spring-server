@@ -1,11 +1,9 @@
 package com.ddoddii.resume.dto.interview;
 
-import groovy.transform.builder.Builder;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @AllArgsConstructor
+@RequiredArgsConstructor
 @Getter
 @Setter
 @Builder
@@ -15,5 +13,5 @@ public class InterviewStartRequestDTO {
     private String companyName;
     private int departmendId;
     private int jobId;
-    private int resumeId;
+    private long resumeId;
 }
