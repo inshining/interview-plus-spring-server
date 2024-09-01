@@ -52,6 +52,7 @@ public class InterviewService {
 
         Interview savedInterview = interviewRepository.save(interview);
 
+        // TODO: 왜 int로 변환하나요? InterviewStartResponseDTO의 interviewId는 Long으로 변경하면 안될까요?
         int interviewId = savedInterview.getId().intValue();
         return InterviewStartResponseDTO.builder().
                 interviewId(interviewId)
