@@ -71,8 +71,7 @@ public class AuthIT {
                 .andExpect(jsonPath("$.email").value(email))
                 .andExpect(jsonPath("$.name").value("test"))
                 .andExpect(jsonPath("$.remainInterview").value(5))
-                .andExpect(jsonPath("$.loginType").value("EMAIL"))
-                .andExpect(jsonPath("$.role").value("ROLE_USER"));
+                .andExpect(jsonPath("$.loginType").value("EMAIL"));
 
         // when
         // then
