@@ -15,6 +15,7 @@ import com.ddoddii.resume.model.RefreshToken;
 import com.ddoddii.resume.model.Resume;
 import com.ddoddii.resume.model.User;
 import com.ddoddii.resume.model.eunm.LoginType;
+import com.ddoddii.resume.model.eunm.RoleType;
 import com.ddoddii.resume.repository.RefreshTokenRepository;
 import com.ddoddii.resume.repository.ResumeRepository;
 import com.ddoddii.resume.repository.UserRepository;
@@ -208,8 +209,7 @@ public class UserService {
         return emailLogin(guestLoginRequestDTO, LoginType.GUEST);
     }
 
-    public void guestEmailSignUpAndLogin(UserEmailSignUpRequestDTO 
-                                        ) {
+    public void guestEmailSignUpAndLogin(UserEmailSignUpRequestDTO userEmailSignUpRequestDTO) {
         User guestUser = getCurrentUser();
         guestUser.setName(userEmailSignUpRequestDTO.getName());
         guestUser.setEmail(userEmailSignUpRequestDTO.getEmail());
