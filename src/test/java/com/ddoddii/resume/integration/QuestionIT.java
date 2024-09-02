@@ -1,5 +1,6 @@
 package com.ddoddii.resume.integration;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -11,13 +12,12 @@ import com.ddoddii.resume.model.Resume;
 import com.ddoddii.resume.model.User;
 import com.ddoddii.resume.model.eunm.InterviewRound;
 import com.ddoddii.resume.model.eunm.RoleType;
+import com.ddoddii.resume.model.question.PersonalQuestion;
 import com.ddoddii.resume.model.question.TechQuestion;
-import com.ddoddii.resume.repository.InterviewRepository;
-import com.ddoddii.resume.repository.ResumeRepository;
-import com.ddoddii.resume.repository.TechQuestionRepository;
-import com.ddoddii.resume.repository.UserRepository;
+import com.ddoddii.resume.repository.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -60,6 +60,9 @@ public class QuestionIT {
     private TechQuestionRepository techQuestionRepository;
 
     @Autowired
+    private PersonalQuestionRepository personalQuestionRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
@@ -83,6 +86,8 @@ public class QuestionIT {
 
     private static User savedUser;
     private static Resume savedResume;
+
+    private Interview savedInterview;
 
     private  static  final String EMAIL = "d23123dnan@emailll.com";
 
@@ -108,7 +113,7 @@ public class QuestionIT {
                 .user(savedUser)
                 .build());
 
-        interviewRepository.save(Interview.builder()
+        Interview interview = Interview.builder()
                 .interviewRound(InterviewRound.FIRST)
                 .companyId(1)
                 .companyName("테스트 회사")
@@ -116,8 +121,13 @@ public class QuestionIT {
                 .jobId(1)
                 .resume(savedResume)
                 .user(savedUser)
-                .build());
+                .build();
+        savedInterview = interviewRepository.save(interview);
+    }
 
+    @AfterEach
+    public void tearDown() {
+        personalQuestionRepository.deleteAll();
     }
 
     @WithMockUser(username = EMAIL)
@@ -180,7 +190,7 @@ public class QuestionIT {
         List<Generation> gens = List.of(new Generation(text));
 
         ChatResponse chatResponse = new ChatResponse(gens);
-        Mockito.when(chatClient.call(Mockito.any(Prompt.class))).thenReturn(chatResponse);
+        Mockito.when(chatClient.call(any(Prompt.class))).thenReturn(chatResponse);
 
         mockMvc.perform(get("/api/question/personal/1"))
                 .andExpect(status().isOk())
@@ -189,6 +199,18 @@ public class QuestionIT {
                 .andExpect(jsonPath("$[2].question").value(questions.get(2)))
                 .andExpect(jsonPath("$[3].question").value(questions.get(3)))
                 .andExpect(jsonPath("$[4].question").value(questions.get(4)));
+    }
+
+    @WithMockUser(username = EMAIL)
+    @DisplayName("실패: 개인 질문 생성 - 이미 개인 질문 존재하는 경우")
+    @Test
+    void testGeneratePersonalQuestionWithExist() throws Exception {
+
+        PersonalQuestion pq1 = PersonalQuestion.builder().interview(savedInterview).resume(savedResume).build();
+        personalQuestionRepository.save(pq1);
+
+        mockMvc.perform(get("/api/question/personal/1"))
+                .andExpect(status().isConflict());
     }
 
     @WithMockUser(username = EMAIL)
