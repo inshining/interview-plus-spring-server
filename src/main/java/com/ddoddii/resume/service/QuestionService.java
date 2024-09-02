@@ -109,7 +109,8 @@ public class QuestionService {
 
     // 자기소개 질문 가져오기
     public List<CommonQuestionDTO> getIntroduceQuestion(long interviewId) {
-        Interview interview = interviewRepository.findInterviewById(interviewId);
+        // TODO: interview 객체를 사용하지 않는다면 아래 코드 삭제해도 될까요?
+//        Interview interview = interviewRepository.findInterviewById(interviewId);
         //Resume resume = checkResumeOwner(interview.getResume().getId());
         List<IntroduceQuestion> introduceQuestions = introduceQuestionRepository.findAll();
 

@@ -9,6 +9,7 @@ import jakarta.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -20,6 +21,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Getter
 @SuperBuilder
 @NoArgsConstructor
+@Setter
 public abstract class BaseQuestionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -11,12 +11,15 @@ import com.ddoddii.resume.model.Resume;
 import com.ddoddii.resume.model.User;
 import com.ddoddii.resume.model.eunm.InterviewRound;
 import com.ddoddii.resume.model.eunm.RoleType;
+import com.ddoddii.resume.model.question.TechQuestion;
 import com.ddoddii.resume.repository.InterviewRepository;
 import com.ddoddii.resume.repository.ResumeRepository;
+import com.ddoddii.resume.repository.TechQuestionRepository;
 import com.ddoddii.resume.repository.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.ai.chat.ChatResponse;
@@ -54,6 +57,9 @@ public class QuestionIT {
     private InterviewRepository interviewRepository;
 
     @Autowired
+    private TechQuestionRepository techQuestionRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
@@ -80,6 +86,8 @@ public class QuestionIT {
 
     private  static  final String EMAIL = "d23123dnan@emailll.com";
 
+    private  static final String POSITION = "개발자";
+
     @BeforeEach
     public void setUp() {
         User user = User.builder()
@@ -94,7 +102,7 @@ public class QuestionIT {
 
         // given
         savedResume = resumeRepository.save(Resume.builder()
-                .position("개발자")
+                .position(POSITION)
                 .content("내용")
                 .name("이름")
                 .user(savedUser)
@@ -113,6 +121,7 @@ public class QuestionIT {
     }
 
     @WithMockUser(username = EMAIL)
+    @DisplayName("성공: 개인 질문 생성")
     @Test
     public void testGeneratePersonalQuestion() throws Exception {
         String text = "[\n" +
@@ -182,5 +191,58 @@ public class QuestionIT {
                 .andExpect(jsonPath("$[4].question").value(questions.get(4)));
     }
 
+    @WithMockUser(username = EMAIL)
+    @DisplayName("성공: 기술 질문 생성")
+    @Test
+    void testTechQuestion() throws Exception{
+        TechQuestion q1 = TechQuestion.builder()
+                .position(POSITION)
+                .build();
+        q1.setQuestion("질문1");
+        TechQuestion q2 = TechQuestion.builder()
+                .position(POSITION)
+                .build();
+        q2.setQuestion("질문2");
+        TechQuestion q3 = TechQuestion.builder()
+                .position(POSITION)
+                .build();
+        q3.setQuestion("질문3");
+        techQuestionRepository.save(q1);
+        techQuestionRepository.save(q2);
+        techQuestionRepository.save(q3);
+
+        this.mockMvc.perform(get("/api/question/tech/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].question").exists())
+                .andExpect(jsonPath("$[1].question").exists())
+                .andExpect(jsonPath("$[2].question").exists());
+    }
+
+    @WithMockUser(username = EMAIL)
+    @DisplayName("성공: 행동 질문 생성")
+    @Test
+    void testBehaviorQuestion() throws Exception{
+        TechQuestion q1 = TechQuestion.builder()
+                .position(POSITION)
+                .build();
+        q1.setQuestion("질문1");
+        TechQuestion q2 = TechQuestion.builder()
+                .position(POSITION)
+                .build();
+        q2.setQuestion("질문2");
+        TechQuestion q3 = TechQuestion.builder()
+                .position(POSITION)
+                .build();
+        q3.setQuestion("질문3");
+        techQuestionRepository.save(q1);
+        techQuestionRepository.save(q2);
+        techQuestionRepository.save(q3);
+
+        this.mockMvc.perform(get("/api/question/behavior/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].question").exists())
+                .andExpect(jsonPath("$[1].question").exists())
+                .andExpect(jsonPath("$[2].question").exists());
+    }
 
 }
