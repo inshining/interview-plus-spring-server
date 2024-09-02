@@ -12,6 +12,7 @@ import com.ddoddii.resume.model.Resume;
 import com.ddoddii.resume.model.User;
 import com.ddoddii.resume.model.eunm.InterviewRound;
 import com.ddoddii.resume.model.eunm.RoleType;
+import com.ddoddii.resume.model.question.BehaviorQuestion;
 import com.ddoddii.resume.model.question.PersonalQuestion;
 import com.ddoddii.resume.model.question.TechQuestion;
 import com.ddoddii.resume.repository.*;
@@ -59,6 +60,8 @@ public class QuestionIT {
     @Autowired
     private TechQuestionRepository techQuestionRepository;
 
+    @Autowired
+    private BehaviorQuestionRepository behaviorQuestionRepository;
     @Autowired
     private PersonalQuestionRepository personalQuestionRepository;
 
@@ -244,23 +247,20 @@ public class QuestionIT {
     @DisplayName("성공: 행동 질문 생성")
     @Test
     void testBehaviorQuestion() throws Exception{
-        TechQuestion q1 = TechQuestion.builder()
-                .position(POSITION)
+        BehaviorQuestion q1 = BehaviorQuestion.builder()
                 .build();
         q1.setQuestion("질문1");
-        TechQuestion q2 = TechQuestion.builder()
-                .position(POSITION)
+        BehaviorQuestion q2 = BehaviorQuestion.builder()
                 .build();
         q2.setQuestion("질문2");
-        TechQuestion q3 = TechQuestion.builder()
-                .position(POSITION)
+        BehaviorQuestion q3 = BehaviorQuestion.builder()
                 .build();
         q3.setQuestion("질문3");
-        techQuestionRepository.save(q1);
-        techQuestionRepository.save(q2);
-        techQuestionRepository.save(q3);
+        behaviorQuestionRepository.save(q1);
+        behaviorQuestionRepository.save(q2);
+        behaviorQuestionRepository.save(q3);
 
-        this.mockMvc.perform(get("/api/question/behavior/1"))
+        this.mockMvc.perform(get("/api/question/behavior/" + savedInterview.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].question").exists())
                 .andExpect(jsonPath("$[1].question").exists())
