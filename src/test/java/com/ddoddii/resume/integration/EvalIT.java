@@ -11,7 +11,6 @@ import com.ddoddii.resume.model.question.BehaviorQuestion;
 import com.ddoddii.resume.model.question.PersonalQuestion;
 import com.ddoddii.resume.model.question.TechQuestion;
 import com.ddoddii.resume.repository.*;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,11 +38,9 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -174,4 +171,65 @@ public class EvalIT {
                 .andExpect(jsonPath("$[0].criteria").isString());
     }
 
+    @WithMockUser(username = EMAIL)
+    @DisplayName("성공: 기술 질문 평가")
+    @Test
+    void testEvalTechQuestion() throws Exception {
+        TechQuestion tq = TechQuestion.builder()
+                .topic("주제")
+                .position("직무")
+                .exampleAnswer("예시 답변")
+                .build();
+        tq.setQuestion("질문");
+
+        TechQuestion savedTq = techQuestionRepository.save(tq);
+
+        AnswerRequestDTO request = AnswerRequestDTO.builder()
+                .interviewId(savedInterview.getId())
+                .questionId(savedTq.getId())
+                .answer("답변")
+                .build();
+
+        String text = exampleEval.getContentAsString(Charset.defaultCharset());
+
+        List<Generation> gens = List.of(new Generation(text));
+        ChatResponse chatResponse = new ChatResponse(gens);
+        Mockito.when(chatClient.call(any(Prompt.class))).thenReturn(chatResponse);
+
+        mockMvc.perform(post("/api/answer/tech")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].criteria").isString());
+    }
+
+    @WithMockUser(username = EMAIL)
+    @DisplayName("성공: 행동 질문 평가")
+    @Test
+    void testEvalBehaviorQuestion() throws Exception {
+        BehaviorQuestion bq = BehaviorQuestion.builder()
+                .criteria("직무")
+                .question("질문")
+                .build();
+
+        BehaviorQuestion savedBq = behaviorQuestionRepository.save(bq);
+
+        AnswerRequestDTO request = AnswerRequestDTO.builder()
+                .interviewId(savedInterview.getId())
+                .questionId(savedBq.getId())
+                .answer("답변")
+                .build();
+
+        String text = exampleEval.getContentAsString(Charset.defaultCharset());
+
+        List<Generation> gens = List.of(new Generation(text));
+        ChatResponse chatResponse = new ChatResponse(gens);
+        Mockito.when(chatClient.call(any(Prompt.class))).thenReturn(chatResponse);
+
+        mockMvc.perform(post("/api/answer/behavior")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].criteria").isString());
+    }
 }
