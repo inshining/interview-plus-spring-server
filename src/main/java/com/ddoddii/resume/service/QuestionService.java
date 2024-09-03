@@ -3,6 +3,7 @@ package com.ddoddii.resume.service;
 import com.ddoddii.resume.dto.question.CommonQuestionDTO;
 import com.ddoddii.resume.dto.question.PersonalQuestionDTO;
 import com.ddoddii.resume.error.errorcode.ResumeErrorCode;
+import com.ddoddii.resume.error.exception.DuplicateQuestionException;
 import com.ddoddii.resume.error.exception.JsonParseException;
 import com.ddoddii.resume.error.exception.NotExistResumeException;
 import com.ddoddii.resume.error.exception.NotResumeOwnerException;
@@ -70,10 +71,17 @@ public class QuestionService {
     //개인 질문 생성
     public List<PersonalQuestionDTO> generatePersonalQuestion(long interviewId) {
         Interview interview = interviewRepository.findInterviewById(interviewId);
+
+        // interview에 개인 질문이 이미 생성되었는지 확인하는 절차
+        // GPT 호출 중복을 방지하기 위함
+        if (isDuplicatedPersonalQuestion(interview)) {
+            throw new DuplicateQuestionException(QuestionErrorCode.DuplicatePersonalQuestion);
+        }
         Resume resume = checkResumeOwner(interview.getResume().getId());
         String position = resume.getPosition();
         String resumeContent = resume.getContent();
         Prompt prompt = generatePrompt(position, resumeContent);
+
         ChatResponse response = chatClient.call(prompt);
         List<PersonalQuestionDTO> personalQuestionDTOS = parseQuestions(response);
 
@@ -109,7 +117,8 @@ public class QuestionService {
 
     // 자기소개 질문 가져오기
     public List<CommonQuestionDTO> getIntroduceQuestion(long interviewId) {
-        Interview interview = interviewRepository.findInterviewById(interviewId);
+        // TODO: interview 객체를 사용하지 않는다면 아래 코드 삭제해도 될까요?
+//        Interview interview = interviewRepository.findInterviewById(interviewId);
         //Resume resume = checkResumeOwner(interview.getResume().getId());
         List<IntroduceQuestion> introduceQuestions = introduceQuestionRepository.findAll();
 
@@ -192,6 +201,10 @@ public class QuestionService {
                 .questionId(questionEntity.getId())
                 .question(questionEntity.getQuestion())
                 .build();
+    }
+
+    private boolean isDuplicatedPersonalQuestion(Interview interview) {
+        return personalQuestionRepository.existsByInterview(interview);
     }
 
 
