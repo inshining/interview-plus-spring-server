@@ -43,9 +43,11 @@ src/main/resources/application.yaml
 
 !src/main/resources/application-jwt.yaml
 !src/main/resources/application-oauth.yaml
-!src/main/resources/application-openai.yaml
+/src/main/resources/application-openai.yaml
 
 src/main/resources/resume-plus-key.json
 mvnw
 .mvn
 mvnw.cmd
+/src/main/resources/application-jwt.yaml
+/src/main/resources/application-openai.yaml

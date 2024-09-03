@@ -15,10 +15,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+
+import lombok.*;
 
 /*
 @ManyToOne : 자식 엔티티(FK를 들고있는 쪽)
@@ -34,6 +32,7 @@ Interview(다) - User(1) : 양방향
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
 public class Interview extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
