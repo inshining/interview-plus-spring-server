@@ -2,8 +2,6 @@ package com.ddoddii.resume.service;
 
 import com.ddoddii.resume.dto.question.CommonQuestionDTO;
 import com.ddoddii.resume.dto.question.PersonalQuestionDTO;
-import com.ddoddii.resume.error.errorcode.OpenAiErrorCode;
-import com.ddoddii.resume.error.errorcode.QuestionErrorCode;
 import com.ddoddii.resume.error.errorcode.ResumeErrorCode;
 import com.ddoddii.resume.error.exception.DuplicateQuestionException;
 import com.ddoddii.resume.error.exception.JsonParseException;
