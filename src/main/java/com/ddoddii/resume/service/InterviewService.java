@@ -44,7 +44,7 @@ public class InterviewService {
             interview.setCompanyName(interviewStartRequestDTO.getCompanyName());
         }
         interview.setJobId(interviewStartRequestDTO.getJobId());
-        interview.setDepartmentId(interview.getDepartmentId());
+        interview.setDepartmentId(interviewStartRequestDTO.getDepartmendId());
         interview.setResume(resumeRepository.findById(interviewStartRequestDTO.getResumeId())
                 .orElseThrow(() -> new NotExistResumeException(
                         ResumeErrorCode.NOT_EXIST_RESUME)));
@@ -58,13 +58,39 @@ public class InterviewService {
                 .build();
     }
 
+    public InterviewResultDTO getInterviewResult(long interviewId) {
+        Interview interview = interviewRepository.findInterviewById(interviewId);
+        return convertToInterviewResultDTO(interview);
+    }
 
     public List<InterviewResultDTO> getInterviewResults() {
         User currentUser = userService.getCurrentUser();
         List<Interview> interviews = interviewRepository.findByUser(currentUser);
-        return interviews.stream()
-                .map(this::convertToInterviewResultDTO)
-                .collect(Collectors.toList());
+        List<InterviewResultDTO> interviewResultDTOS = new ArrayList<>();
+        for (Interview interview : interviews) {
+            if (interview.getPersonalEval().isEmpty() | interview.getBehaviorEval().isEmpty() | interview.getTechEval()
+                    .isEmpty() | interview.getIntroduceEval().isEmpty()) {
+                continue;
+            }
+            InterviewResultDTO interviewResultDTO = convertToInterviewResultDTO(interview);
+            interviewResultDTOS.add(interviewResultDTO);
+        }
+        return interviewResultDTOS;
+    }
+
+
+    public List<InterviewResultDTO> getPendingInterviewResults() {
+        User currentUser = userService.getCurrentUser();
+        List<Interview> interviews = interviewRepository.findByUser(currentUser);
+        List<InterviewResultDTO> pendingInterviewResultDTOs = new ArrayList<>();
+        for (Interview interview : interviews) {
+            if (interview.getPersonalEval().isEmpty() | interview.getBehaviorEval().isEmpty() | interview.getTechEval()
+                    .isEmpty() | interview.getIntroduceEval().isEmpty()) {
+                InterviewResultDTO pendingInterviewResultDTO = convertToPendingInterviewResultDTO(interview);
+                pendingInterviewResultDTOs.add(pendingInterviewResultDTO);
+            }
+        }
+        return pendingInterviewResultDTOs;
     }
 
     public void deleteCurrentInterview(long interviewId) {
@@ -112,6 +138,21 @@ public class InterviewService {
                 .build();
     }
 
+    private InterviewResultDTO convertToPendingInterviewResultDTO(Interview interview) {
+        return InterviewResultDTO.builder()
+                .interviewId(interview.getId())
+                .companyId(interview.getCompanyId())
+                .companyName(interview.getCompanyName())
+                .jobId(interview.getJobId())
+                .departmentId(interview.getDepartmentId())
+                .createdAt(interview.getCreatedAt())
+                .personalFeedback(new ArrayList<>())
+                .techFeedback(new ArrayList<>())
+                .behaviorFeedback(new ArrayList<>())
+                .introduceFeedback(new ArrayList<>())
+                .build();
+    }
+
     private EvaluationResultDTO convertToEvaluationResultDTO(Evaluation evaluation) {
         ObjectMapper objectMapper = new ObjectMapper();
         List<Map<String, Object>> gptEvaluationParsed = new ArrayList<>();
@@ -131,6 +172,4 @@ public class InterviewService {
                 .gptEvaluation(gptEvaluationParsed)
                 .build();
     }
-
-
 }
