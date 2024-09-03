@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -31,10 +32,24 @@ public class InterviewController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<InterviewResultDTO>> getInterviewResults() {
-        List<InterviewResultDTO> interviewResultDTOS = interviewService.getInterviewResults();
-        return ResponseEntity.ok(interviewResultDTOS);
+    public ResponseEntity<List<InterviewResultDTO>> getInterviewResultsByStatus(
+            @RequestParam(value = "status", required = false) String status) {
+        List<InterviewResultDTO> results = null;
+        if ("done".equalsIgnoreCase(status)) {
+            results = interviewService.getInterviewResults();
+        }
+        if ("pending".equalsIgnoreCase(status)) {
+            results = interviewService.getPendingInterviewResults();
+        }
+        return ResponseEntity.ok(results);
     }
+
+    @GetMapping("/{interviewId}")
+    public ResponseEntity<InterviewResultDTO> getInterviewResult(@PathVariable long interviewId) {
+        InterviewResultDTO interviewResultDTO = interviewService.getInterviewResult(interviewId);
+        return ResponseEntity.ok(interviewResultDTO);
+    }
+
 
     @DeleteMapping("/{interviewId}")
     public ResponseEntity<String> deleteInterview(@PathVariable long interviewId) {

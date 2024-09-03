@@ -128,7 +128,8 @@ public class UserService {
 
         // 비밀번호 암호화
         String encryptPassword = encryptPassword(userGoogleLoginRequestDTO.getIdToken());
-        User user = User.signUpUser(userGoogleLoginRequestDTO.getName(), userGoogleLoginRequestDTO.getEmail(), encryptPassword);
+        User user = User.signUpUser(userGoogleLoginRequestDTO.getName(), userGoogleLoginRequestDTO.getEmail(),
+                encryptPassword);
         user.setLoginType(LoginType.GOOGLE);
 
         User saveUser = userRepository.save(user);
@@ -209,6 +210,8 @@ public class UserService {
         return emailLogin(guestLoginRequestDTO, LoginType.GUEST);
     }
 
+
+    // 게스트 회원가입 & 로그인
     public void guestEmailSignUpAndLogin(UserEmailSignUpRequestDTO userEmailSignUpRequestDTO) {
         User guestUser = getCurrentUser();
         guestUser.setName(userEmailSignUpRequestDTO.getName());
@@ -298,6 +301,7 @@ public class UserService {
         user.setLoginType(loginType);
         return user;
     }
+
     // 비밀번호 암호화
     private String encryptPassword(String password) {
         return PasswordEncrypter.encrypt(password);
@@ -305,6 +309,7 @@ public class UserService {
 
     /**
      * 사용자 정보를 이용하여 토큰 발행하는 메소드
+     *
      * @param user 사용자 정보
      * @return JwtTokenDTO
      */
