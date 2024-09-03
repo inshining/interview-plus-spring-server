@@ -23,10 +23,11 @@ import com.ddoddii.resume.repository.IntroduceQuestionRepository;
 import com.ddoddii.resume.repository.PersonalQuestionRepository;
 import com.ddoddii.resume.repository.ResumeRepository;
 import com.ddoddii.resume.repository.TechQuestionRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.io.IOException;
 import jakarta.transaction.Transactional;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -162,23 +163,23 @@ public class QuestionService {
         return new Prompt(List.of(userMessage, systemMessage));
     }
 
-    // Sting 에서 Json 형태로 파싱
+    // String 에서 Json 형태로 파싱
     private List<PersonalQuestionDTO> parseQuestions(ChatResponse response) {
         String jsonResponse = response.getResult().getOutput().getContent();
         List<PersonalQuestionDTO> questionList = new ArrayList<>();
+        List<String> criteria = new ArrayList<>();
         try {
             JsonNode rootNode = objectMapper.readTree(jsonResponse);
             for (JsonNode questionNode : rootNode) {
                 String question = questionNode.get("question").asText();
                 log.info("parsed question :" + question);
-                List<String> criteria = new ArrayList<>();
                 for (JsonNode criteriaNode : questionNode.get("criteria")) {
                     criteria.add(criteriaNode.asText());
                 }
                 questionList.add(PersonalQuestionDTO.builder().question(question).criteria(criteria).build());
             }
-        } catch (IOException e) {
-            throw new JsonParseException(OpenAiErrorCode.JSON_PARSE_ERROR);
+        } catch (IOException | JsonParseException | JsonProcessingException e) {
+            return questionList;
         }
         return questionList;
     }
