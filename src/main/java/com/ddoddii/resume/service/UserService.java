@@ -210,7 +210,6 @@ public class UserService {
         return emailLogin(guestLoginRequestDTO, LoginType.GUEST);
     }
 
-
     // 게스트 회원가입 & 로그인
     public void guestEmailSignUpAndLogin(UserEmailSignUpRequestDTO userEmailSignUpRequestDTO) {
         User guestUser = getCurrentUser();
