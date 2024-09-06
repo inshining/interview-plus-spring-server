@@ -34,6 +34,10 @@ class UserControllerTest {
     @MockBean
     private UserService userService;
 
+    @MockBean
+    private EmailService emailService;
+
+
     // jwtFilter 빈을 주입하지 않으면 테스트가 실패합니다.
     @MockBean
     private JwtFilter jwtFilter;
@@ -206,6 +210,7 @@ class UserControllerTest {
     void emailLoginFail_WrongPassword() throws Exception {
         // given
         when(userService.emailLogin(any(UserEmailLoginRequestDTO.class), any(LoginType.class))).thenThrow(new DuplicateIdException(UserErrorCode.BAD_CREDENTIALS));
+
 
         UserEmailLoginRequestDTO request = UserEmailLoginRequestDTO.builder()
                 .email(email)

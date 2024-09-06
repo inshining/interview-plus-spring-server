@@ -86,7 +86,7 @@ public class EvaluationService {
         ChatResponse response = chatClient.call(prompt);
         String gptEvaluation = response.getResult().getOutput().getContent();
 
-        saveEvaluation(currentInterview, answerRequestDTO.getQuestionId(), QuestionType.PERSONAL, question, answer,
+        saveEvaluation(currentInterview, answerRequestDTO.getQuestionId(), QuestionType.TECH, question, answer,
                 gptEvaluation);
 
         return gptEvaluation;
@@ -103,7 +103,7 @@ public class EvaluationService {
         ChatResponse response = chatClient.call(prompt);
         String gptEvaluation = response.getResult().getOutput().getContent();
 
-        saveEvaluation(currentInterview, answerRequestDTO.getQuestionId(), QuestionType.PERSONAL, question, answer,
+        saveEvaluation(currentInterview, answerRequestDTO.getQuestionId(), QuestionType.INTRODUCE, question, answer,
                 gptEvaluation);
 
         return gptEvaluation;
@@ -120,7 +120,7 @@ public class EvaluationService {
         ChatResponse response = chatClient.call(prompt);
         String gptEvaluation = response.getResult().getOutput().getContent();
 
-        saveEvaluation(currentInterview, answerRequestDTO.getQuestionId(), QuestionType.PERSONAL, question, answer,
+        saveEvaluation(currentInterview, answerRequestDTO.getQuestionId(), QuestionType.BEHAVIOR, question, answer,
                 gptEvaluation);
 
         return gptEvaluation;
@@ -130,12 +130,14 @@ public class EvaluationService {
                                 String askedQuestion,
                                 String userAnswer, String gptEvaluation) {
         Evaluation evaluation = Evaluation.builder()
+                .interviewId(currentInterview.getId())
                 .interview(currentInterview)
                 .questionId(questionId)
                 .questionType(questionType)
                 .askedQuestion(askedQuestion)
                 .gptEvaluation(gptEvaluation)
                 .userAnswer(userAnswer)
+                .done(true)
                 .build();
         evaluationRepository.save(evaluation);
     }

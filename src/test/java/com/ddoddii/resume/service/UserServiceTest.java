@@ -76,17 +76,28 @@ class UserServiceTest {
 
         given(userRepository.existsByEmail(anyString())).willReturn(false);
         given(userRepository.save(any(User.class))).willReturn(user);
+        given(userRepository.findByEmail(anyString())).willReturn(Optional.ofNullable(user));
+
+        String grantType = "Bearer";
+        String accessToken = "accessToken";
+        String refreshToken = "refreshToken";
+
+        given(tokenProvider.createToken(any(UsernamePasswordAuthenticationToken.class))).willReturn(JwtTokenDTO.builder()
+                .grantType(grantType)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken).build());
+
 
 
         // when
-        UserDTO userDTO = userService.signUp(userEmailSignUpRequestDTO,  LoginType.EMAIL);
+        UserAuthResponseDTO userAuthResponseDTO = userService.emailSignUpAndLogin(userEmailSignUpRequestDTO);
 
         // then
-        assertNotNull(userDTO);
-        assertEquals(userEmailSignUpRequestDTO.getEmail(), userDTO.getEmail());
-        assertEquals(userEmailSignUpRequestDTO.getName(), userDTO.getName());
-        assertEquals(LoginType.EMAIL, userDTO.getLoginType());
-        assertEquals(1L, userDTO.getUserId());
+        assertNotNull(userAuthResponseDTO);
+        assertEquals(userEmailSignUpRequestDTO.getEmail(), userAuthResponseDTO.getUser().getEmail());
+        assertEquals(userEmailSignUpRequestDTO.getName(), userAuthResponseDTO.getUser().getName());
+        assertEquals(LoginType.EMAIL, userAuthResponseDTO.getUser().getLoginType());
+        assertEquals(1L, userAuthResponseDTO.getUser().getUserId());
     }
 
 
@@ -104,6 +115,7 @@ class UserServiceTest {
 
         // then
         assertThrows(DuplicateIdException.class, () -> userService.signUp(userEmailSignUpRequestDTO, LoginType.EMAIL));
+
     }
 
     @DisplayName("이메일 로그인 - 성공")
@@ -332,7 +344,7 @@ class UserServiceTest {
         given(refreshTokenService.findByRefreshToken(anyString())).willReturn(Optional.empty());
 
         // when
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> userService.generateNewAccessToken(refreshTokenParm));
+        NotExistIdException exception = assertThrows(NotExistIdException.class, () -> userService.generateNewAccessToken(refreshTokenParm));
 
         // then
         assertEquals("User not found", ((NotExistIdException) exception).getErrorCode().getMessage());

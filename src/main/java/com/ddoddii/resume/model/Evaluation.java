@@ -28,8 +28,11 @@ public class Evaluation extends BaseEntity {
     private Long id;
 
     // Evaluation 이 Interview의 FK를 가지고 있다 = 연관관계의 주인이다
-    @ManyToOne
     @JoinColumn(name = "interview_id")
+    private Long interviewId;
+
+    @ManyToOne
+    @JoinColumn(name = "interview")
     private Interview interview;
 
     @Column(name = "question_id")
@@ -47,4 +50,6 @@ public class Evaluation extends BaseEntity {
 
     @Column(name = "gpt_evaluation", columnDefinition = "TEXT")
     private String gptEvaluation;
+
+    private boolean done;
 }

@@ -59,7 +59,7 @@ public class ResumeIT {
 
     private User user;
 
-    private  static  final String EMAIL = "d23123dnan@emailll.com";
+    private static final String EMAIL = "d23123dnan@emailll.com";
 
     @BeforeEach
     void setUp(){
@@ -72,8 +72,6 @@ public class ResumeIT {
                 .build();
 
         userRepository.save(user);
-
-
     }
 
     @DisplayName("성공: 이력서 리스팅")
