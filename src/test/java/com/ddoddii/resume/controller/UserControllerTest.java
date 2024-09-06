@@ -6,6 +6,7 @@ import com.ddoddii.resume.error.exception.DuplicateIdException;
 import com.ddoddii.resume.error.exception.NotExistIdException;
 import com.ddoddii.resume.model.eunm.LoginType;
 import com.ddoddii.resume.security.JwtFilter;
+import com.ddoddii.resume.service.EmailService;
 import com.ddoddii.resume.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -36,6 +37,9 @@ class UserControllerTest {
     // jwtFilter 빈을 주입하지 않으면 테스트가 실패합니다.
     @MockBean
     private JwtFilter jwtFilter;
+
+    @MockBean
+    private EmailService emailService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -165,7 +169,7 @@ class UserControllerTest {
 
         JwtTokenDTO jwtTokenDTO =JwtTokenDTO.builder().refreshToken("refreshToken").accessToken("accessToken").grantType("Bearer").build();
         UserAuthResponseDTO userAuthResponseDTO =UserAuthResponseDTO.builder().user(userDTO).token(jwtTokenDTO).build();
-        when(userService.emailLogin(any())).thenReturn(userAuthResponseDTO);
+        when(userService.emailLogin(any(UserEmailLoginRequestDTO.class), any(LoginType.class))).thenReturn(userAuthResponseDTO);
 
         this.mockMvc.perform(post("/api/users/email-login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -183,7 +187,7 @@ class UserControllerTest {
     @Test
     void emailLoginFail_NotExistEmail() throws Exception {
         // given
-        when(userService.emailLogin(any())).thenThrow(new DuplicateIdException(UserErrorCode.BAD_CREDENTIALS));
+        when(userService.emailLogin(any(UserEmailLoginRequestDTO.class), any(LoginType.class))).thenThrow(new DuplicateIdException(UserErrorCode.BAD_CREDENTIALS));
 
         UserEmailLoginRequestDTO request = UserEmailLoginRequestDTO.builder()
                 .email(email)
@@ -201,7 +205,7 @@ class UserControllerTest {
     @Test
     void emailLoginFail_WrongPassword() throws Exception {
         // given
-        when(userService.emailLogin(any())).thenThrow(new DuplicateIdException(UserErrorCode.BAD_CREDENTIALS));
+        when(userService.emailLogin(any(UserEmailLoginRequestDTO.class), any(LoginType.class))).thenThrow(new DuplicateIdException(UserErrorCode.BAD_CREDENTIALS));
 
         UserEmailLoginRequestDTO request = UserEmailLoginRequestDTO.builder()
                 .email(email)

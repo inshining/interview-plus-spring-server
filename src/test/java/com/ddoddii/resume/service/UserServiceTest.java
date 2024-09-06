@@ -9,6 +9,7 @@ import com.ddoddii.resume.dto.user.*;
 import com.ddoddii.resume.error.errorcode.UserErrorCode;
 import com.ddoddii.resume.error.exception.BadCredentialsException;
 import com.ddoddii.resume.error.exception.DuplicateIdException;
+import com.ddoddii.resume.error.exception.NotExistIdException;
 import com.ddoddii.resume.model.RefreshToken;
 import com.ddoddii.resume.model.User;
 import com.ddoddii.resume.model.eunm.LoginType;
@@ -76,8 +77,9 @@ class UserServiceTest {
         given(userRepository.existsByEmail(anyString())).willReturn(false);
         given(userRepository.save(any(User.class))).willReturn(user);
 
+
         // when
-        UserDTO userDTO = userService.emailSignUp(userEmailSignUpRequestDTO);
+        UserDTO userDTO = userService.signUp(userEmailSignUpRequestDTO,  LoginType.EMAIL);
 
         // then
         assertNotNull(userDTO);
@@ -101,7 +103,7 @@ class UserServiceTest {
         given(userRepository.existsByEmail(anyString())).willReturn(true);
 
         // then
-        assertThrows(DuplicateIdException.class, () -> userService.emailSignUp(userEmailSignUpRequestDTO));
+        assertThrows(DuplicateIdException.class, () -> userService.signUp(userEmailSignUpRequestDTO, LoginType.EMAIL));
     }
 
     @DisplayName("이메일 로그인 - 성공")
@@ -127,7 +129,7 @@ class UserServiceTest {
                         .refreshToken(refreshToken).build());
 
         // when
-        UserAuthResponseDTO response = userService.emailLogin(request);
+        UserAuthResponseDTO response = userService.emailLogin(request, LoginType.EMAIL);
 
         // then
         assertNotNull(response);
@@ -146,7 +148,7 @@ class UserServiceTest {
                 .build();
 
         // then
-        BadCredentialsException exception = assertThrows(BadCredentialsException.class, () -> userService.emailLogin(request));
+        BadCredentialsException exception = assertThrows(BadCredentialsException.class, () -> userService.emailLogin(request, LoginType.EMAIL));
         assertEquals(UserErrorCode.BAD_CREDENTIALS, exception.getErrorCode());
     }
 
@@ -162,7 +164,7 @@ class UserServiceTest {
         given(userRepository.findByEmail(anyString())).willReturn(Optional.ofNullable(user));
 
         // when
-        BadCredentialsException exception = assertThrows(BadCredentialsException.class, () -> userService.emailLogin(request));
+        BadCredentialsException exception = assertThrows(BadCredentialsException.class, () -> userService.emailLogin(request, LoginType.EMAIL));
 
         // then
         assertEquals(UserErrorCode.BAD_CREDENTIALS, exception.getErrorCode());
@@ -333,7 +335,7 @@ class UserServiceTest {
         RuntimeException exception = assertThrows(RuntimeException.class, () -> userService.generateNewAccessToken(refreshTokenParm));
 
         // then
-        assertEquals("Refresh Token not found", exception.getMessage());
+        assertEquals("User not found", ((NotExistIdException) exception).getErrorCode().getMessage());
 
     }
 }
